@@ -1,0 +1,76 @@
+version: "3.9"
+
+services:
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "4000:4000"
+    env_file:
+      - ./api-gateway/.env
+    depends_on:
+      - auth-service
+    networks:
+      - linkedin-network
+
+  auth-service:
+    build: ./auth
+    container_name: auth-service
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./auth/.env.docker
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - linkedin-network
+
+  postgres:
+    image: postgres:15
+    container_name: linkedin-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: linkedin_auth
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - linkedin-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: linkedin-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - linkedin-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: linkedin-rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - linkedin-network
+
+networks:
+  linkedin-network:
+
+volumes:
+  postgres_data:
