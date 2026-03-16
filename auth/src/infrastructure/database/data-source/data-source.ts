@@ -18,7 +18,11 @@ export const dataSourceOptions: DataSourceOptions = {
 
   entities:
     process.env.NODE_ENV === 'production'
-      ? ['dist/**/*.entity.js']
+      ? [
+          'dist/**/*.entity.js',
+          'src/infrastructure/outbox/*.entity.js',
+          'src/infrastructure/inbox/*.entity.js',
+        ]
       : [
           'src/**/*.entity.ts',
           'src/infrastructure/outbox/*.entity.ts',
