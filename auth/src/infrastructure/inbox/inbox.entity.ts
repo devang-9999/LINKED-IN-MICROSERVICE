@@ -19,6 +19,9 @@ export class InboxEvent {
   @Column({ type: 'jsonb' })
   payload: Record<string, any>;
 
+  @Column({ default: false })
+  processed: boolean;
+
   @CreateDateColumn()
-  receivedAt: Date;
+  createdAt: Date;
 }

@@ -1,35 +1,46 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
 
 import { OutboxEvent } from './outbox.entity';
-import { AuthPublisher } from '../rabbitmq/publisher/auth.publisher';
+import { createRabbitMQConnection } from '../rabbitmq/rabbbitmq.connection';
 
 @Injectable()
 export class OutboxWorker {
   constructor(
-    @InjectRepository(OutboxEvent)
-    private readonly outboxRepository: Repository<OutboxEvent>,
-
-    private readonly publisher: AuthPublisher,
+    @InjectDataSource()
+    private dataSource: DataSource,
   ) {}
 
-  async processEvents() {
-    const events = await this.outboxRepository.find({
+  async run() {
+    const { channel, exchange } = await createRabbitMQConnection();
+
+    const repo = this.dataSource.getRepository(OutboxEvent);
+
+    const events = await repo.find({
       where: { processed: false },
       order: { createdAt: 'ASC' },
     });
 
     for (const event of events) {
       try {
-        await this.publisher.publish(event.eventType, event.payload);
+        channel.publish(
+          exchange,
+          event.eventType,
+          Buffer.from(JSON.stringify(event.payload)),
+          { persistent: true },
+        );
 
         event.processed = true;
-        await this.outboxRepository.save(event);
+        await repo.save(event);
 
-        console.log('Event dispatched:', event.eventType);
-      } catch (error) {
-        console.error('Failed to publish event:', error);
+        console.log('✅ Dispatched:', event.eventType);
+      } catch (err) {
+        console.error('❌ Failed:', event.eventType);
       }
     }
   }

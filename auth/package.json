@@ -24,7 +24,8 @@
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/infrastructure/database/data-source/data-source.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/infrastructure/database/data-source/data-source.ts",
     "dispatch": "ts-node -r tsconfig-paths/register src/cli/dispatch.ts",
-    "consume": "ts-node -r tsconfig-paths/register src/cli/consume.ts"
+    "consume": "ts-node -r tsconfig-paths/register src/cli/consume.ts",
+    "process": "ts-node -r tsconfig-paths/register src/cli/process.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

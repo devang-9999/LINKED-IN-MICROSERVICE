@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 
 import { Experience } from 'src/domain/profile/entities/experience.entity';
 import { User } from 'src/domain/profile/entities/user.entity';
+import { OutboxEvent } from 'src/infrastructure/outbox/outbox.entity';
 
 import { CreateExperienceDto } from '../dto/experience/create-experience.dto';
 import { UpdateExperienceDto } from '../dto/experience/update-experience.dto';
@@ -21,6 +22,9 @@ export class ExperienceService {
 
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+
+    @InjectRepository(OutboxEvent)
+    private readonly outboxRepo: Repository<OutboxEvent>,
   ) {}
 
   private async getUserId(userId: string): Promise<string> {
@@ -43,7 +47,20 @@ export class ExperienceService {
       user: { id } as User,
     });
 
-    return this.experienceRepo.save(experience);
+    const saved = await this.experienceRepo.save(experience);
+
+    await this.outboxRepo.save({
+      aggregateType: 'experience',
+      aggregateId: saved.id,
+      eventType: 'profile.experience.added',
+      payload: {
+        userId: id,
+        experienceId: saved.id,
+        company: saved.company,
+      },
+    });
+
+    return saved;
   }
 
   async findAllByUser(userId: string) {
@@ -73,7 +90,19 @@ export class ExperienceService {
 
     Object.assign(experience, dto);
 
-    return this.experienceRepo.save(experience);
+    const updated = await this.experienceRepo.save(experience);
+
+    await this.outboxRepo.save({
+      aggregateType: 'experience',
+      aggregateId: updated.id,
+      eventType: 'profile.experience.updated',
+      payload: {
+        userId: id,
+        experienceId: updated.id,
+      },
+    });
+
+    return updated;
   }
 
   async remove(experienceId: string, userId: string) {
@@ -93,6 +122,16 @@ export class ExperienceService {
     }
 
     await this.experienceRepo.remove(experience);
+
+    await this.outboxRepo.save({
+      aggregateType: 'experience',
+      aggregateId: experienceId,
+      eventType: 'profile.experience.deleted',
+      payload: {
+        userId: id,
+        experienceId,
+      },
+    });
 
     return { message: 'Experience deleted successfully' };
   }

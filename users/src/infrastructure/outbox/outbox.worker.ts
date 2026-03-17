@@ -1,47 +1,38 @@
-// import { DataSource } from 'typeorm';
-// import { OutboxEvent } from './outbox.entity';
-// import * as amqp from 'amqplib';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { DataSource } from 'typeorm';
+import { OutboxEvent } from './outbox.entity';
+import { createRabbitMQConnection } from '../rabbitmq/rabbitmq.connection';
 
-// export class OutboxWorker {
-//   constructor(private dataSource: DataSource) {}
+export class OutboxWorker {
+  constructor(private dataSource: DataSource) {}
 
-//   async start() {
-//     const connection = await amqp.connect(process.env.RABBITMQ_URL!);
-//     const channel = await connection.createChannel();
+  async run() {
+    const { channel, exchange } = await createRabbitMQConnection();
 
-//     const exchange = process.env.RABBITMQ_EXCHANGE!;
+    const repo = this.dataSource.getRepository(OutboxEvent);
 
-//     await channel.assertExchange(exchange, 'topic', { durable: true });
+    const events = await repo.find({
+      where: { processed: false },
+      take: 50,
+      order: { createdAt: 'ASC' },
+    });
 
-//     console.log('Outbox worker started...');
+    console.log(`Dispatching ${events.length} events...`);
 
-//     setInterval(async () => {
-//       await this.dispatchEvents(channel, exchange);
-//     }, 5000);
-//   }
+    for (const event of events) {
+      channel.publish(
+        exchange,
+        event.eventType,
+        Buffer.from(JSON.stringify(event.payload)),
+        { persistent: true },
+      );
 
-//   private async dispatchEvents(channel: amqp.Channel, exchange: string) {
-//     const repo = this.dataSource.getRepository(OutboxEvent);
+      event.processed = true;
+      await repo.save(event);
 
-//     const events = await repo.find({
-//       where: { processed: false },
-//       take: 20,
-//       order: { createdAt: 'ASC' },
-//     });
-
-//     for (const event of events) {
-//       channel.publish(
-//         exchange,
-//         event.eventType,
-//         Buffer.from(JSON.stringify(event.payload)),
-//         { persistent: true },
-//       );
-
-//       event.processed = true;
-
-//       await repo.save(event);
-
-//       console.log(`Event dispatched: ${event.eventType}`);
-//     }
-//   }
-// }
+      console.log(`✅ Dispatched: ${event.eventType}`);
+    }
+  }
+}

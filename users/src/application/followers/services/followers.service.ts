@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 
 import { Follow } from 'src/domain/followers/entities/follow.entity';
 import { User } from 'src/domain/profile/entities/user.entity';
+import { OutboxEvent } from 'src/infrastructure/outbox/outbox.entity';
 
 @Injectable()
 export class FollowersService {
@@ -18,6 +19,9 @@ export class FollowersService {
 
     @InjectRepository(User)
     private userRepository: Repository<User>,
+
+    @InjectRepository(OutboxEvent)
+    private outboxRepository: Repository<OutboxEvent>,
   ) {}
 
   async followUser(currentUserId: string, targetUserId: string) {
@@ -55,6 +59,16 @@ export class FollowersService {
 
     await this.followRepository.save(follow);
 
+    await this.outboxRepository.save({
+      aggregateType: 'follow',
+      aggregateId: follow.id,
+      eventType: 'user.followed',
+      payload: {
+        followerId: currentUserId,
+        followingId: targetUserId,
+      },
+    });
+
     return { message: 'User followed successfully' };
   }
 
@@ -71,6 +85,16 @@ export class FollowersService {
     }
 
     await this.followRepository.remove(follow);
+
+    await this.outboxRepository.save({
+      aggregateType: 'follow',
+      aggregateId: follow.id,
+      eventType: 'user.unfollowed',
+      payload: {
+        followerId: currentUserId,
+        followingId: targetUserId,
+      },
+    });
 
     return { message: 'User unfollowed successfully' };
   }

@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 
 import { Education } from 'src/domain/profile/entities/education.entity';
 import { User } from 'src/domain/profile/entities/user.entity';
+import { OutboxEvent } from 'src/infrastructure/outbox/outbox.entity';
 
 import { CreateEducationDto } from '../dto/education/create-education.dto';
 import { UpdateEducationDto } from '../dto/education/update-education.dto';
@@ -21,6 +22,9 @@ export class EducationService {
 
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+
+    @InjectRepository(OutboxEvent)
+    private readonly outboxRepo: Repository<OutboxEvent>,
   ) {}
 
   private async getUserId(userId: string): Promise<string> {
@@ -43,7 +47,20 @@ export class EducationService {
       user: { id } as User,
     });
 
-    return this.educationRepo.save(education);
+    const saved = await this.educationRepo.save(education);
+
+    await this.outboxRepo.save({
+      aggregateType: 'education',
+      aggregateId: saved.id,
+      eventType: 'profile.education.added',
+      payload: {
+        userId: id,
+        educationId: saved.id,
+        school: saved.school,
+      },
+    });
+
+    return saved;
   }
 
   async findAllByUser(userId: string) {
@@ -73,7 +90,19 @@ export class EducationService {
 
     Object.assign(education, dto);
 
-    return this.educationRepo.save(education);
+    const updated = await this.educationRepo.save(education);
+
+    await this.outboxRepo.save({
+      aggregateType: 'education',
+      aggregateId: updated.id,
+      eventType: 'profile.education.updated',
+      payload: {
+        userId: id,
+        educationId: updated.id,
+      },
+    });
+
+    return updated;
   }
 
   async remove(educationId: string, userId: string) {
@@ -93,6 +122,16 @@ export class EducationService {
     }
 
     await this.educationRepo.remove(education);
+
+    await this.outboxRepo.save({
+      aggregateType: 'education',
+      aggregateId: educationId,
+      eventType: 'profile.education.deleted',
+      payload: {
+        userId: id,
+        educationId,
+      },
+    });
 
     return { message: 'Education deleted successfully' };
   }

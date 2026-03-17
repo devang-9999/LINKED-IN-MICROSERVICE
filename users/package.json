@@ -17,7 +17,15 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "typeorm": "typeorm-ts-node-commonjs",
+    "migration:generate": "ts-node --transpile-only -r tsconfig-paths/register ./node_modules/typeorm/cli-ts-node-commonjs migration:generate src/infrastructure/database/migrations/migration -d src/infrastructure/database/data-source/data-source.ts",
+    "migration:create": "typeorm-ts-node-commonjs migration:create src/infrastructure/database/migrations/migration",
+    "migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli-ts-node-commonjs migration:run -d src/infrastructure/database/data-source/data-source.ts",
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/infrastructure/database/data-source/data-source.ts",
+    "dispatch": "ts-node -r tsconfig-paths/register src/cli/dispatch.ts",
+    "consume": "ts-node -r tsconfig-paths/register src/cli/consume.ts",
+    "process": "ts-node -r tsconfig-paths/register src/cli/process.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -44,7 +52,7 @@
     "@nestjs/testing": "^11.0.1",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
-    "@types/node": "^22.10.7",
+    "@types/node": "^22.19.15",
     "@types/supertest": "^6.0.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",

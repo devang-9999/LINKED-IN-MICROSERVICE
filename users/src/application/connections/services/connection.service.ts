@@ -13,6 +13,7 @@ import {
 } from 'src/domain/connections/entities/connection.entity';
 
 import { User } from 'src/domain/profile/entities/user.entity';
+import { OutboxEvent } from 'src/infrastructure/outbox/outbox.entity';
 
 @Injectable()
 export class ConnectionsService {
@@ -22,6 +23,9 @@ export class ConnectionsService {
 
     @InjectRepository(User)
     private userRepository: Repository<User>,
+
+    @InjectRepository(OutboxEvent)
+    private outboxRepository: Repository<OutboxEvent>,
   ) {}
 
   async sendRequest(currentUserId: string, targetUserId: string) {
@@ -60,12 +64,23 @@ export class ConnectionsService {
 
     await this.connectionRepository.save(connection);
 
+    await this.outboxRepository.save({
+      aggregateType: 'connection',
+      aggregateId: connection.id,
+      eventType: 'connection.requested',
+      payload: {
+        senderId: currentUserId,
+        receiverId: targetUserId,
+      },
+    });
+
     return { message: 'Connection request sent' };
   }
 
   async acceptRequest(connectionId: string) {
     const connection = await this.connectionRepository.findOne({
       where: { id: connectionId },
+      relations: ['sender', 'receiver'],
     });
 
     if (!connection) {
@@ -76,12 +91,23 @@ export class ConnectionsService {
 
     await this.connectionRepository.save(connection);
 
+    await this.outboxRepository.save({
+      aggregateType: 'connection',
+      aggregateId: connection.id,
+      eventType: 'connection.accepted',
+      payload: {
+        senderId: connection.sender.id,
+        receiverId: connection.receiver.id,
+      },
+    });
+
     return { message: 'Connection accepted' };
   }
 
   async rejectRequest(connectionId: string) {
     const connection = await this.connectionRepository.findOne({
       where: { id: connectionId },
+      relations: ['sender', 'receiver'],
     });
 
     if (!connection) {
@@ -91,6 +117,16 @@ export class ConnectionsService {
     connection.status = ConnectionStatus.REJECTED;
 
     await this.connectionRepository.save(connection);
+
+    await this.outboxRepository.save({
+      aggregateType: 'connection',
+      aggregateId: connection.id,
+      eventType: 'connection.rejected',
+      payload: {
+        senderId: connection.sender.id,
+        receiverId: connection.receiver.id,
+      },
+    });
 
     return { message: 'Connection rejected' };
   }

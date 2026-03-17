@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { User } from 'src/domain/profile/entities/user.entity';
+import { OutboxEvent } from 'src/infrastructure/outbox/outbox.entity';
+
 import { UpdateUserDto } from '../dto/update-user.dto';
 
 @Injectable()
@@ -10,6 +12,9 @@ export class ProfileService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+    @InjectRepository(OutboxEvent)
+    private readonly outboxRepository: Repository<OutboxEvent>,
   ) {}
 
   private async findUser(userId: string): Promise<User> {
@@ -38,7 +43,21 @@ export class ProfileService {
 
     Object.assign(user, dto);
 
-    return this.userRepository.save(user);
+    const updated = await this.userRepository.save(user);
+
+    await this.outboxRepository.save({
+      aggregateType: 'profile',
+      aggregateId: updated.id,
+      eventType: 'profile.updated',
+      payload: {
+        userId: updated.id,
+        firstName: updated.firstName,
+        lastName: updated.lastName,
+        headline: updated.headline,
+      },
+    });
+
+    return updated;
   }
 
   async updateProfilePicture(userId: string, filename: string) {
@@ -46,7 +65,19 @@ export class ProfileService {
 
     user.profilePicture = filename;
 
-    return this.userRepository.save(user);
+    const updated = await this.userRepository.save(user);
+
+    await this.outboxRepository.save({
+      aggregateType: 'profile',
+      aggregateId: updated.id,
+      eventType: 'profile.picture.updated',
+      payload: {
+        userId: updated.id,
+        profilePicture: filename,
+      },
+    });
+
+    return updated;
   }
 
   async updateCoverPicture(userId: string, filename: string) {
@@ -54,6 +85,18 @@ export class ProfileService {
 
     user.coverPicture = filename;
 
-    return this.userRepository.save(user);
+    const updated = await this.userRepository.save(user);
+
+    await this.outboxRepository.save({
+      aggregateType: 'profile',
+      aggregateId: updated.id,
+      eventType: 'profile.cover.updated',
+      payload: {
+        userId: updated.id,
+        coverPicture: filename,
+      },
+    });
+
+    return updated;
   }
 }

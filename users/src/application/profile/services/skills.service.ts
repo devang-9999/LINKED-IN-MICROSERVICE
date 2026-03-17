@@ -10,6 +10,7 @@ import { Repository } from 'typeorm';
 import { Skill } from 'src/domain/profile/entities/skill.entity';
 import { UserSkill } from 'src/domain/profile/entities/user-skill.entity';
 import { User } from 'src/domain/profile/entities/user.entity';
+import { OutboxEvent } from 'src/infrastructure/outbox/outbox.entity';
 import { AddSkillDto } from '../dto/skills/add-skill.dto';
 
 @Injectable()
@@ -23,6 +24,9 @@ export class SkillsService {
 
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+
+    @InjectRepository(OutboxEvent)
+    private readonly outboxRepo: Repository<OutboxEvent>,
   ) {}
 
   private normalizeSkillName(name: string) {
@@ -71,7 +75,20 @@ export class SkillsService {
       skill,
     });
 
-    return this.userSkillRepo.save(userSkill);
+    const saved = await this.userSkillRepo.save(userSkill);
+
+    await this.outboxRepo.save({
+      aggregateType: 'skill',
+      aggregateId: skill.id,
+      eventType: 'profile.skill.added',
+      payload: {
+        userId: id,
+        skillId: skill.id,
+        skillName: skill.name,
+      },
+    });
+
+    return saved;
   }
 
   async getUserSkills(userId: string) {
@@ -100,6 +117,16 @@ export class SkillsService {
     }
 
     await this.userSkillRepo.remove(userSkill);
+
+    await this.outboxRepo.save({
+      aggregateType: 'skill',
+      aggregateId: skillId,
+      eventType: 'profile.skill.removed',
+      payload: {
+        userId: id,
+        skillId,
+      },
+    });
 
     return { message: 'Skill removed successfully' };
   }

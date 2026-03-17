@@ -1,5 +1,7 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
 import * as dotenv from 'dotenv';
+import { OutboxEvent } from 'src/infrastructure/outbox/outbox.entity';
+import { InboxEvent } from 'src/infrastructure/inbox/inbox.entity';
 
 dotenv.config({
   path:
@@ -18,16 +20,8 @@ export const dataSourceOptions: DataSourceOptions = {
 
   entities:
     process.env.NODE_ENV === 'production'
-      ? [
-          'dist/**/*.entity.js',
-          'src/infrastructure/outbox/*.entity.js',
-          'src/infrastructure/inbox/*.entity.js',
-        ]
-      : [
-          'src/**/*.entity.ts',
-          'src/infrastructure/outbox/*.entity.ts',
-          'src/infrastructure/inbox/*.entity.ts',
-        ],
+      ? ['dist/**/*.entity.js', OutboxEvent, InboxEvent]
+      : ['src/**/*.entity.ts', OutboxEvent, InboxEvent],
 
   migrations:
     process.env.NODE_ENV === 'production'

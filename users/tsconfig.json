@@ -1,6 +1,9 @@
 {
+  "ts-node": {
+    "transpileOnly": true
+  },
   "compilerOptions": {
-    "types": [],
+    "types": ["node"],
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "resolvePackageJsonExports": true,

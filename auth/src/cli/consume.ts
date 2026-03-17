@@ -1,15 +1,13 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../app.module';
-import { AuthConsumer } from '../infrastructure/rabbitmq/consumer/auth.consumer';
+import dataSource from 'src/infrastructure/database/data-source/data-source';
+import { OutboxWorker } from '../infrastructure/outbox/outbox.worker';
 
 async function bootstrap() {
-  const app = await NestFactory.createApplicationContext(AppModule);
+  await dataSource.initialize();
 
-  const consumer = app.get(AuthConsumer);
+  const worker = new OutboxWorker(dataSource);
+  await worker.run();
 
-  await consumer.onModuleInit();
-
-  console.log('Consumer started...');
+  process.exit(0);
 }
 
 void bootstrap();
