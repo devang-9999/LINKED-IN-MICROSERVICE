@@ -34,6 +34,7 @@ import { FollowersController } from './presentation/followers/followers.controll
 import { ConnectionsController } from './presentation/connections/connections.controller';
 import dataSource from './infrastructure/database/data-source/data-source';
 import { ConnectionsService } from './application/connections/services/connection.service';
+import { JwtModule } from './infrastructure/security/jwt.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { ConnectionsService } from './application/connections/services/connectio
       OutboxEvent,
       InboxEvent,
     ]),
+    JwtModule,
   ],
 
   controllers: [

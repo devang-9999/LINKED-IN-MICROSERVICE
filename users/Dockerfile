@@ -26,5 +26,4 @@ RUN npm install
 
 COPY . .
 
-# 🔥 Dev mode
 CMD ["npm", "run", "start:dev"]

@@ -38,10 +38,28 @@ export class ProfileService {
     return this.findUser(userId);
   }
 
-  async updateProfile(userId: string, dto: UpdateUserDto) {
+  async updateProfile(
+    userId: string,
+    dto: UpdateUserDto,
+    profilePicture?: string,
+    coverPicture?: string,
+  ) {
     const user = await this.findUser(userId);
 
-    Object.assign(user, dto);
+    // ✅ Update text fields safely
+    if (dto.firstName !== undefined) user.firstName = dto.firstName;
+    if (dto.lastName !== undefined) user.lastName = dto.lastName;
+    if (dto.headline !== undefined) user.headline = dto.headline;
+    if (dto.about !== undefined) user.about = dto.about;
+
+    // ✅ Update images if provided
+    if (profilePicture) {
+      user.profilePicture = profilePicture;
+    }
+
+    if (coverPicture) {
+      user.coverPicture = coverPicture;
+    }
 
     const updated = await this.userRepository.save(user);
 
@@ -54,6 +72,8 @@ export class ProfileService {
         firstName: updated.firstName,
         lastName: updated.lastName,
         headline: updated.headline,
+        profilePicture: updated.profilePicture,
+        coverPicture: updated.coverPicture,
       },
     });
 

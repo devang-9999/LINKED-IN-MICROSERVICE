@@ -7,38 +7,30 @@ export class ProfileService {
   private baseUrl = process.env.USERS_SERVICE_URL;
 
   async getMyProfile(headers: any) {
-    return axios.get(`${this.baseUrl}/profile/me`, {
+    const response = await axios.get(`${this.baseUrl}/profile/me`, {
       headers,
       withCredentials: true,
     });
+
+    return response;
   }
 
   async getPublicProfile(id: string, headers: any) {
-    return axios.get(`${this.baseUrl}/profile/${id}`, {
+    const response = await axios.get(`${this.baseUrl}/profile/${id}`, {
       headers,
       withCredentials: true,
     });
+
+    return response;
   }
 
-  async updateProfile(data: any, headers: any) {
-    return axios.patch(`${this.baseUrl}/profile`, data, {
+  async updateProfileJson(data: any, headers: any) {
+    const response = await axios.patch(`${this.baseUrl}/profile/me`, data, {
       headers,
       withCredentials: true,
-      timeout: 5000,
+      timeout: 10000,
     });
-  }
 
-  async updateProfilePicture(file: any, headers: any) {
-    return axios.patch(`${this.baseUrl}/profile/profile-picture`, file, {
-      headers,
-      withCredentials: true,
-    });
-  }
-
-  async updateCoverPicture(file: any, headers: any) {
-    return axios.patch(`${this.baseUrl}/profile/cover-picture`, file, {
-      headers,
-      withCredentials: true,
-    });
+    return response;
   }
 }

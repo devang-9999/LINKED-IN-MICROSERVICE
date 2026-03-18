@@ -9,24 +9,27 @@ import {
   Param,
   Body,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 
 import { EducationService } from 'src/application/profile/services/education.service';
 import { CreateEducationDto } from 'src/application/profile/dto/education/create-education.dto';
 import { UpdateEducationDto } from 'src/application/profile/dto/education/update-education.dto';
+import { JwtAuthGuard } from 'src/infrastructure/security/jwt-auth.gaurd';
 
+@UseGuards(JwtAuthGuard)
 @Controller('education')
 export class EducationController {
   constructor(private readonly educationService: EducationService) {}
 
   @Post()
   create(@Req() req: any, @Body() dto: CreateEducationDto) {
-    return this.educationService.create(req.user.sub, dto);
+    return this.educationService.create(req.user.userId, dto);
   }
 
   @Get()
   findMyEducation(@Req() req: any) {
-    return this.educationService.findAllByUser(req.user.sub);
+    return this.educationService.findAllByUser(req.user.userId);
   }
 
   @Patch(':id')
@@ -35,11 +38,11 @@ export class EducationController {
     @Req() req: any,
     @Body() dto: UpdateEducationDto,
   ) {
-    return this.educationService.update(id, req.user.sub, dto);
+    return this.educationService.update(id, req.user.userId, dto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req: any) {
-    return this.educationService.remove(id, req.user.sub);
+    return this.educationService.remove(id, req.user.userId);
   }
 }

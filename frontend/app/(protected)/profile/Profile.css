@@ -1,0 +1,99 @@
+.profile-container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+.profile-header {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.cover {
+  height: 200px;
+  background: #a0b4b7;
+}
+
+.profile-info {
+  padding: 20px;
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: gray;
+  margin-top: -60px;
+}
+
+.profile-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.profile-sections {
+  margin-top: 20px;
+}
+
+.section-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+.modal-wrapper {
+  position: fixed;
+  height: auto;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+  animation: zoomIn 0.3s ease;
+}
+
+.page-blur {
+  background: transparent;
+  pointer-events: none;
+  user-select: none;
+  transition: filter 0.25s ease;
+}
+
+.add-profile-modal {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  width: 450px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.menu-item {
+  padding: 12px 0;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.menu-item:hover {
+  color: #0a66c2;
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

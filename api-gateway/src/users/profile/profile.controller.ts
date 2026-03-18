@@ -1,8 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Controller, Get, Patch, Param, Body, Req, Res } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Req, Res } from '@nestjs/common';
 
 import express from 'express';
 import { ProfileService } from './profile.service';
+import { createProxyServer } from 'http-proxy';
+
+const proxy = createProxyServer({});
 
 @Controller('users/profile')
 export class ProfileController {
@@ -24,36 +29,28 @@ export class ProfileController {
     return res.status(response.status).json(response.data);
   }
 
-  @Patch('')
-  async updateProfile(
-    @Body() body: any,
-    @Req() req: any,
-    @Res() res: express.Response,
-  ) {
-    const response = await this.service.updateProfile(body, req.headers);
-    console.log(' i got hitted');
-    return res.status(response.status).json(response.data);
+  @Patch()
+  updateProfile(@Req() req: any, @Res() res: any) {
+    req.url = '/profile';
+
+    proxy.web(req, res, {
+      target: process.env.USERS_SERVICE_URL,
+      changeOrigin: true,
+    });
   }
-
   @Patch('profile-picture')
-  async updateProfilePicture(
-    @Body() body: any,
-    @Req() req: any,
-    @Res() res: express.Response,
-  ) {
-    const response = await this.service.updateProfilePicture(body, req.headers);
-
-    return res.status(response.status).json(response.data);
+  updateProfilePicture(@Req() req: any, @Res() res: any) {
+    proxy.web(req, res, {
+      target: `${process.env.USERS_SERVICE_URL}`,
+      changeOrigin: true,
+    });
   }
 
   @Patch('cover-picture')
-  async updateCoverPicture(
-    @Body() body: any,
-    @Req() req: any,
-    @Res() res: express.Response,
-  ) {
-    const response = await this.service.updateCoverPicture(body, req.headers);
-
-    return res.status(response.status).json(response.data);
+  updateCoverPicture(@Req() req: any, @Res() res: any) {
+    proxy.web(req, res, {
+      target: `${process.env.USERS_SERVICE_URL}`,
+      changeOrigin: true,
+    });
   }
 }

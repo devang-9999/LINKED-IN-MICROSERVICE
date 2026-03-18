@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { IsString, IsOptional, IsDateString, IsBoolean } from 'class-validator';
 
 export class CreateExperienceDto {
   @IsString()
-  companyName: string;
+  company: string;
 
   @IsString()
   title: string;

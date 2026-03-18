@@ -15,6 +15,7 @@ import { FollowersController } from './followers/follower.controller';
 import { ConnectionsController } from './connections/connection.controller';
 import { FollowersService } from './followers/follower.service';
 import { ConnectionsService } from './connections/connection.service';
+import { UploadProxyController } from './uploads/proxy.controller';
 
 @Module({
   controllers: [
@@ -29,6 +30,8 @@ import { ConnectionsService } from './connections/connection.service';
     FollowersController,
 
     ConnectionsController,
+
+    UploadProxyController,
   ],
 
   providers: [

@@ -1,0 +1,61 @@
+.skill-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background:transparent
+}
+
+.skill-modal {
+  width: 600px;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+}
+
+.skill-title {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.skill-required {
+  font-size: 12px;
+  color: gray;
+  margin-bottom: 15px;
+}
+
+.skill-suggestions {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 10px;
+  background: #f3f2ef;
+}
+
+.skill-suggestion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.skill-suggestion-title {
+  font-weight: 500;
+}
+
+.skill-chip-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.skill-chip {
+  border-radius: 20px !important;
+  background: white !important;
+  border: 1px solid #ccc !important;
+}
+
+.skill-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 30px;
+}

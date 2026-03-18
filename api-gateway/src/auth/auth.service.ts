@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 
@@ -5,49 +6,42 @@ import axios from 'axios';
 export class AuthService {
   private authServiceUrl = process.env.AUTH_SERVICE_URL;
 
-  async register(data: any) {
-    const response = await axios.post(
-      `${this.authServiceUrl}/auth/register`,
-      data,
-      { withCredentials: true },
-    );
-
-    return response;
+  async register(data: any, headers: any) {
+    return axios.post(`${this.authServiceUrl}/auth/register`, data, {
+      headers,
+      withCredentials: true,
+    });
   }
 
-  async login(data: any) {
-    const response = await axios.post(
-      `${this.authServiceUrl}/auth/login`,
-      data,
-      { withCredentials: true },
-    );
-
-    return response;
+  async login(data: any, headers: any) {
+    return axios.post(`${this.authServiceUrl}/auth/login`, data, {
+      headers,
+      withCredentials: true,
+    });
   }
 
-  async logout() {
-    const response = await axios.post(
+  async logout(headers: any) {
+    return axios.post(
       `${this.authServiceUrl}/auth/logout`,
       {},
-      { withCredentials: true },
+      {
+        headers,
+        withCredentials: true,
+      },
     );
-
-    return response;
   }
 
-  async getById(id: string) {
-    const response = await axios.get(`${this.authServiceUrl}/auth/${id}`, {
+  async getById(id: string, headers: any) {
+    return axios.get(`${this.authServiceUrl}/auth/${id}`, {
+      headers,
       withCredentials: true,
     });
-
-    return response;
   }
 
-  async deleteById(id: string) {
-    const response = await axios.delete(`${this.authServiceUrl}/auth/${id}`, {
+  async deleteById(id: string, headers: any) {
+    return axios.delete(`${this.authServiceUrl}/auth/${id}`, {
+      headers,
       withCredentials: true,
     });
-
-    return response;
   }
 }

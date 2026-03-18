@@ -1,17 +1,40 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { Controller, Get, Patch, Param, Body, Req } from '@nestjs/common';
+
+import {
+  Controller,
+  Get,
+  Patch,
+  Param,
+  Body,
+  Req,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
+  UploadedFiles,
+} from '@nestjs/common';
+
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+} from '@nestjs/platform-express';
 
 import { ProfileService } from 'src/application/profile/services/profile.service';
 import { UpdateUserDto } from 'src/application/profile/dto/update-user.dto';
+import { JwtAuthGuard } from 'src/infrastructure/security/jwt-auth.gaurd';
+import { multerOptions } from 'src/infrastructure/config/multer/multer.configuration';
 
+@UseGuards(JwtAuthGuard)
 @Controller('profile')
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
   @Get('me')
   getMyProfile(@Req() req: any) {
-    return this.profileService.getMyProfile(req.user.sub);
+    return this.profileService.getMyProfile(req.user.userId);
   }
 
   @Get(':id')
@@ -19,18 +42,68 @@ export class ProfileController {
     return this.profileService.getPublicProfile(id);
   }
 
-  @Patch()
-  updateProfile(@Req() req: any, @Body() dto: UpdateUserDto) {
-    return this.profileService.updateProfile(req.user.sub, dto);
+  @UseGuards(JwtAuthGuard)
+  @Patch('')
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'profilePicture', maxCount: 1 },
+        { name: 'coverPicture', maxCount: 1 },
+      ],
+      multerOptions,
+    ),
+  )
+  updateProfile(
+    @Req() req: any,
+    @Body() dto: UpdateUserDto,
+    @UploadedFiles()
+    files: {
+      profilePicture?: Express.Multer.File[];
+      coverPicture?: Express.Multer.File[];
+    },
+  ) {
+    const userId = req.user.userId;
+
+    const profilePicture = files?.profilePicture?.[0]?.filename;
+    const coverPicture = files?.coverPicture?.[0]?.filename;
+
+    return this.profileService.updateProfile(
+      userId,
+      dto,
+      profilePicture,
+      coverPicture,
+    );
   }
 
   @Patch('profile-picture')
-  updateProfilePicture(@Req() req: any, @Body('filename') filename: string) {
-    return this.profileService.updateProfilePicture(req.user.sub, filename);
+  @UseInterceptors(FileInterceptor('file', multerOptions))
+  updateProfilePicture(
+    @Req() req: any,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+
+    return this.profileService.updateProfilePicture(
+      req.user.userId,
+      file.filename,
+    );
   }
 
   @Patch('cover-picture')
-  updateCoverPicture(@Req() req: any, @Body('filename') filename: string) {
-    return this.profileService.updateCoverPicture(req.user.sub, filename);
+  @UseInterceptors(FileInterceptor('file', multerOptions))
+  updateCoverPicture(
+    @Req() req: any,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+
+    return this.profileService.updateCoverPicture(
+      req.user.userId,
+      file.filename,
+    );
   }
 }
