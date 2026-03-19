@@ -1,0 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+import { IsOptional, IsString, MaxLength } from 'class-validator';
+
+export class CreateRepostDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  message?: string;
+}

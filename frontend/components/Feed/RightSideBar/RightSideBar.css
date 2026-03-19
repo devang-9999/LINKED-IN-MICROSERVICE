@@ -1,0 +1,149 @@
+.right-sidebar {
+  position: sticky;
+  top: 80px;
+}
+
+/* ================= NEWS CARD ================= */
+
+.news-card {
+  border-radius: 10px !important;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.news-title {
+  font-weight: 600 !important;
+  font-size: 16px !important;
+}
+
+.news-info-icon {
+  font-size: 18px !important;
+  color: #666;
+}
+
+.top-stories {
+  margin-top: 8px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+.news-item {
+  margin-top: 12px;
+  cursor: pointer;
+}
+
+.news-item:hover {
+  background: #f3f2ef;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+.news-headline {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+
+.news-meta {
+  font-size: 12px !important;
+  color: #666;
+}
+
+.show-more-news {
+  margin-top: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  gap: 4px;
+}
+
+/* ================= PUZZLE ================= */
+
+.puzzle-title {
+  margin-top: 16px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+.puzzle-row {
+  gap: 10px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.puzzle-icon {
+  width: 40px;
+  height: 40px;
+  background: orange;
+  border-radius: 6px;
+}
+
+.puzzle-name {
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+.puzzle-sub {
+  font-size: 12px !important;
+  color: #666;
+}
+
+/* ================= JOB BANNER ================= */
+
+.job-banner {
+  border-radius: 10px !important;
+  padding: 16px;
+  background: #0a2c4a !important;
+  color: white !important;
+  margin-bottom: 12px;
+}
+
+.job-banner-top {
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+}
+
+.job-banner-top span {
+  background: #0a66c2;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.job-banner-title {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  margin-bottom: 10px !important;
+}
+
+.explore-btn {
+  border-radius: 20px !important;
+  text-transform: none !important;
+  background: #0a66c2 !important;
+}
+
+.job-banner-image {
+  margin-top: 12px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.job-banner-image img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+/* ================= FOOTER ================= */
+
+.right-footer {
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  padding: 10px 0;
+}
+
+.footer-links {
+  margin-bottom: 4px !important;
+}
+
+.footer-copy {
+  margin-top: 8px !important;
+}

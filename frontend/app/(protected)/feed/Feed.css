@@ -1,0 +1,23 @@
+.feed-page {
+  background: #f3f2ef;
+  height: 150vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.feed-body {
+  width: 1200px;
+  margin: 24px auto;
+  display: grid;
+  grid-template-columns: 225px 1fr 300px;
+  gap: 24px;
+  flex: 1;
+  overflow: hidden; 
+}
+
+.feed-container {
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 8px;
+}

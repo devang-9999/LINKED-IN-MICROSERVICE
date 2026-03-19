@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
@@ -29,6 +30,25 @@ export class ProfileService {
       headers,
       withCredentials: true,
       timeout: 10000,
+    });
+
+    return response;
+  }
+
+  async getSuggestions(headers: any) {
+    // ❌ REMOVE CACHE HEADERS
+    const {
+      ['if-none-match']: _etag,
+      ['if-modified-since']: _modified,
+      ...cleanHeaders
+    } = headers;
+
+    const response = await axios.get(`${this.baseUrl}/profile/suggestions`, {
+      headers: {
+        ...cleanHeaders,
+        'Cache-Control': 'no-cache',
+      },
+      withCredentials: true,
     });
 
     return response;

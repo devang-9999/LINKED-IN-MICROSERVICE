@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 
@@ -42,7 +41,6 @@ export class ProfileController {
     return this.profileService.getPublicProfile(id);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Patch('')
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -105,5 +103,10 @@ export class ProfileController {
       req.user.userId,
       file.filename,
     );
+  }
+
+  @Get('suggestions')
+  getSuggestions(@Req() req: any) {
+    return this.profileService.getSuggestions(req.user.userId);
   }
 }

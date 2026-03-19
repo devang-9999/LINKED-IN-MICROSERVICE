@@ -1,11 +1,17 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 
 import { User } from 'src/domain/profile/entities/user.entity';
 import { OutboxEvent } from 'src/infrastructure/outbox/outbox.entity';
 
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { Follow } from 'src/domain/followers/entities/follow.entity';
+import {
+  Connection,
+  ConnectionStatus,
+} from 'src/domain/connections/entities/connection.entity';
 
 @Injectable()
 export class ProfileService {
@@ -15,6 +21,12 @@ export class ProfileService {
 
     @InjectRepository(OutboxEvent)
     private readonly outboxRepository: Repository<OutboxEvent>,
+
+    @InjectRepository(Follow)
+    private readonly followRepository: Repository<Follow>,
+
+    @InjectRepository(Connection)
+    private readonly connectionRepository: Repository<Connection>,
   ) {}
 
   private async findUser(userId: string): Promise<User> {
@@ -118,5 +130,78 @@ export class ProfileService {
     });
 
     return updated;
+  }
+
+  async getSuggestions(currentUserId: string) {
+    // =========================
+    // FOLLOWED USERS
+    // =========================
+    const follows = await this.followRepository.find({
+      where: { follower: { id: currentUserId } },
+      relations: ['following'],
+    });
+
+    const followedIds = follows.map((f) => f.following?.id).filter(Boolean);
+
+    // =========================
+    // ALL CONNECTIONS (ONE QUERY)
+    // =========================
+    const connections = await this.connectionRepository.find({
+      where: [
+        { sender: { id: currentUserId } },
+        { receiver: { id: currentUserId } },
+      ],
+      relations: ['sender', 'receiver'],
+    });
+
+    const acceptedIds: string[] = [];
+    const pendingIds: string[] = [];
+
+    connections.forEach((c) => {
+      const otherUserId =
+        c.sender?.id === currentUserId ? c.receiver?.id : c.sender?.id;
+
+      if (!otherUserId) return;
+
+      if (c.status === ConnectionStatus.ACCEPTED) {
+        acceptedIds.push(otherUserId);
+      }
+
+      if (c.status === ConnectionStatus.PENDING) {
+        pendingIds.push(otherUserId);
+      }
+    });
+
+    // =========================
+    // FINAL EXCLUSION LIST
+    // =========================
+    const excludedIds = [
+      ...new Set([
+        currentUserId,
+        ...followedIds,
+        ...acceptedIds,
+        ...pendingIds,
+      ]),
+    ];
+
+    // =========================
+    // FETCH USERS
+    // =========================
+    const users = await this.userRepository.find({
+      where: {
+        id: Not(In(excludedIds.length ? excludedIds : [currentUserId])),
+      },
+      select: [
+        'id',
+        'firstName',
+        'lastName',
+        'headline',
+        'profilePicture',
+        'coverPicture',
+      ],
+      take: 20,
+    });
+
+    return users;
   }
 }

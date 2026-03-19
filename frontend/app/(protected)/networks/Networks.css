@@ -1,0 +1,74 @@
+
+.my-network-wrapper {
+  background-color: #f3f2ef;
+  height: 120vh;
+}
+
+
+
+.my-network-container {
+  max-width: 1128px;
+  margin: 24px auto;   
+  padding: 0 16px;
+
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  column-gap: 24px;
+
+  align-items: start; 
+}
+
+
+
+.left-column {
+  position: sticky;
+  top: 76px;  
+  align-self: start;
+}
+
+
+
+.main-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+
+
+.suggestion-section {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  padding: 16px;
+}
+
+.suggestion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.suggestion-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #191919;
+}
+
+.show-all {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0a66c2;
+  cursor: pointer;
+}
+
+.show-all:hover {
+  text-decoration: underline;
+}
+
+.suggestion-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}

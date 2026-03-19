@@ -16,6 +16,7 @@ services:
     depends_on:
       - auth-service
       - users-service
+      - posts-service   # ✅ added
     networks:
       - linkedin-network
 
@@ -50,6 +51,23 @@ services:
     depends_on:
       - postgres
       - rabbitmq
+    networks:
+      - linkedin-network
+
+  posts-service:
+    build: ./posts
+    container_name: posts-service
+    ports:
+      - "3003:3003"
+    env_file:
+      - ./posts/.env.docker
+    volumes:
+      - ./posts:/app
+      - /app/node_modules
+      - ./posts/uploads:/app/uploads
+    command: npm run start:dev
+    depends_on:
+      - postgres
     networks:
       - linkedin-network
 

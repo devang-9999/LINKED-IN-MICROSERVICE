@@ -1,0 +1,122 @@
+.network-left-container {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ================= NETWORK CARD ================= */
+
+.network-card {
+  border-radius: 8px !important;
+  border: 1px solid #e0e0e0;
+  padding: 16px;
+}
+
+.card-title {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  margin-bottom: 16px !important;
+  color: #191919;
+}
+
+.stats-row {
+  margin-bottom: 16px;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  color: #191919;
+}
+
+.stat-label {
+  font-size: 13px !important;
+  color: #666;
+  margin-top: 4px;
+}
+
+.show-more {
+  gap: 4px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+}
+
+/* ================= JOB CARD ================= */
+
+.job-card {
+  border-radius: 8px !important;
+  overflow: hidden;
+  background: #1660b5 !important;
+  color: white !important;
+}
+
+.job-header {
+  padding: 16px;
+}
+
+.linkedin-badge {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  opacity: 0.8;
+}
+
+.job-title {
+  margin: 8px 0 12px !important;
+  font-weight: 600 !important;
+  line-height: 1.4;
+}
+
+.explore-btn {
+  background: white !important;
+  color: #0a66c2 !important;
+  border-radius: 16px !important;
+  text-transform: none !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+.job-image {
+  width: 100%;
+  display: block;
+}
+
+/* ================= FOOTER ================= */
+
+.network-footer {
+  text-align: center;
+  padding: 12px 8px;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 12px;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.footer-links span {
+  cursor: pointer;
+}
+
+.footer-links span:hover {
+  text-decoration: underline;
+}
+
+.footer-copyright {
+  font-size: 12px !important;
+  color: #666;
+}
+
+.linkedin-text {
+  color: #0a66c2;
+  font-weight: 600;
+}
