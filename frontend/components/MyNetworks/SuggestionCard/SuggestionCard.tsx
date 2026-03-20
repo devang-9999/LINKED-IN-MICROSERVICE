@@ -1,6 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -51,6 +50,7 @@ export default function SuggestionCard({
   const [followed, setFollowed] = useState(false);
   const [requested, setRequested] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
+
   const [loadingFollow, setLoadingFollow] = useState(false);
   const [loadingConnect, setLoadingConnect] = useState(false);
 
@@ -60,19 +60,19 @@ export default function SuggestionCard({
   const checkFollowStatus = async () => {
     try {
       const res = await getFollowStatus(user.id);
-      setFollowed(res?.data?.isFollowing || false);
+      setFollowed(res?.data?.isFollowing ?? false);
     } catch (err) {
       console.error("Follow status error:", err);
     }
   };
 
   // =========================
-  // FOLLOWERS COUNT
+  // FOLLOWERS COUNT (FIXED)
   // =========================
   const fetchFollowersCount = async () => {
     try {
       const res = await getFollowersCount(user.id);
-      setFollowersCount(res?.data?.followersCount || 0);
+      setFollowersCount(res?.data?.count ?? 0); // ✅ FIXED
     } catch (err) {
       console.error("Followers count error:", err);
     }
@@ -96,7 +96,7 @@ export default function SuggestionCard({
   };
 
   // =========================
-  // FOLLOW / UNFOLLOW
+  // FOLLOW TOGGLE
   // =========================
   const handleFollowToggle = async () => {
     if (loadingFollow) return;
@@ -121,7 +121,7 @@ export default function SuggestionCard({
   };
 
   // =========================
-  // CONNECT / CANCEL REQUEST
+  // CONNECT TOGGLE
   // =========================
   const handleConnectToggle = async () => {
     if (loadingConnect) return;
@@ -146,7 +146,7 @@ export default function SuggestionCard({
   };
 
   // =========================
-  // INITIAL FETCH
+  // INITIAL LOAD
   // =========================
   useEffect(() => {
     if (!user?.id) return;
@@ -158,7 +158,7 @@ export default function SuggestionCard({
 
   return (
     <Paper elevation={0} className="suggestion-card">
-      {/* COVER IMAGE */}
+      {/* COVER */}
       <Box className="cover-wrapper">
         <img
           src={
@@ -170,7 +170,6 @@ export default function SuggestionCard({
           className="cover-image"
         />
 
-        {/* REMOVE CARD */}
         <IconButton
           className="close-btn"
           size="small"
@@ -180,7 +179,7 @@ export default function SuggestionCard({
         </IconButton>
       </Box>
 
-      {/* PROFILE IMAGE */}
+      {/* AVATAR */}
       <Box className="avatar-wrapper">
         <Avatar
           src={
@@ -192,18 +191,16 @@ export default function SuggestionCard({
         />
       </Box>
 
+      {/* BODY */}
       <Box className="card-body">
-        {/* NAME */}
         <Typography className="name">
           {user.firstName} {user.lastName}
         </Typography>
 
-        {/* HEADLINE */}
         <Typography className="headline">
           {user.headline || "No headline available"}
         </Typography>
 
-        {/* FOLLOWERS */}
         <Typography className="followers">
           {followersCount} followers
         </Typography>
@@ -225,11 +222,7 @@ export default function SuggestionCard({
             },
           }}
         >
-          {loadingFollow
-            ? "Loading..."
-            : followed
-            ? "Following"
-            : "Follow"}
+          {loadingFollow ? "Loading..." : followed ? "Following" : "Follow"}
         </Button>
 
         {/* CONNECT BUTTON */}
@@ -248,11 +241,7 @@ export default function SuggestionCard({
           }}
           onClick={handleConnectToggle}
         >
-          {loadingConnect
-            ? "Loading..."
-            : requested
-            ? "Pending"
-            : "Connect"}
+          {loadingConnect ? "Loading..." : requested ? "Pending" : "Connect"}
         </Button>
       </Box>
     </Paper>

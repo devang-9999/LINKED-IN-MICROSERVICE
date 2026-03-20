@@ -24,13 +24,21 @@ export class RepostsController {
     @Req() req: any,
     @Res() res: express.Response,
   ) {
-    const response = await this.service.createRepost(
-      postId,
-      req.body,
-      req.headers,
-    );
+    try {
+      const response = await this.service.createRepost(
+        postId,
+        req.body,
+        req.headers,
+      );
 
-    return res.status(response.status).json(response.data);
+      return res.status(response.status).json(response.data);
+    } catch (error) {
+      console.error('Create repost error:', error?.response || error.message);
+
+      return res.status(error?.response?.status || 500).json({
+        message: 'Failed to create repost',
+      });
+    }
   }
 
   @Get()
@@ -40,11 +48,22 @@ export class RepostsController {
     @Req() req: any,
     @Res() res: express.Response,
   ) {
-    const response = await this.service.getAllReposts(page, limit, req.headers);
+    try {
+      const response = await this.service.getAllReposts(
+        Number(page),
+        Number(limit),
+        req.headers,
+      );
 
-    return res.status(response.status).json(response.data);
+      return res.status(response.status).json(response.data);
+    } catch (error) {
+      console.error('Get reposts error:', error?.response || error.message);
+
+      return res.status(error?.response?.status || 500).json({
+        message: 'Failed to fetch reposts',
+      });
+    }
   }
-
   @Get('post/:postId')
   async getByPost(
     @Param('postId') postId: string,
@@ -53,14 +72,25 @@ export class RepostsController {
     @Req() req: any,
     @Res() res: express.Response,
   ) {
-    const response = await this.service.getRepostsByPost(
-      postId,
-      page,
-      limit,
-      req.headers,
-    );
+    try {
+      const response = await this.service.getRepostsByPost(
+        postId,
+        Number(page),
+        Number(limit),
+        req.headers,
+      );
 
-    return res.status(response.status).json(response.data);
+      return res.status(response.status).json(response.data);
+    } catch (error) {
+      console.error(
+        'Get reposts by post error:',
+        error?.response || error.message,
+      );
+
+      return res.status(error?.response?.status || 500).json({
+        message: 'Failed to fetch reposts for post',
+      });
+    }
   }
 
   @Delete(':postId')
@@ -69,8 +99,16 @@ export class RepostsController {
     @Req() req: any,
     @Res() res: express.Response,
   ) {
-    const response = await this.service.deleteRepost(postId, req.headers);
+    try {
+      const response = await this.service.deleteRepost(postId, req.headers);
 
-    return res.status(response.status).json(response.data);
+      return res.status(response.status).json(response.data);
+    } catch (error) {
+      console.error('Delete repost error:', error?.response || error.message);
+
+      return res.status(error?.response?.status || 500).json({
+        message: 'Failed to delete repost',
+      });
+    }
   }
 }

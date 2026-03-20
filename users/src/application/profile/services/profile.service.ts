@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
@@ -133,19 +132,12 @@ export class ProfileService {
   }
 
   async getSuggestions(currentUserId: string) {
-    // =========================
-    // FOLLOWED USERS
-    // =========================
     const follows = await this.followRepository.find({
       where: { follower: { id: currentUserId } },
       relations: ['following'],
     });
 
     const followedIds = follows.map((f) => f.following?.id).filter(Boolean);
-
-    // =========================
-    // ALL CONNECTIONS (ONE QUERY)
-    // =========================
     const connections = await this.connectionRepository.find({
       where: [
         { sender: { id: currentUserId } },
@@ -172,9 +164,6 @@ export class ProfileService {
       }
     });
 
-    // =========================
-    // FINAL EXCLUSION LIST
-    // =========================
     const excludedIds = [
       ...new Set([
         currentUserId,
@@ -183,10 +172,6 @@ export class ProfileService {
         ...pendingIds,
       ]),
     ];
-
-    // =========================
-    // FETCH USERS
-    // =========================
     const users = await this.userRepository.find({
       where: {
         id: Not(In(excludedIds.length ? excludedIds : [currentUserId])),
@@ -203,5 +188,14 @@ export class ProfileService {
     });
 
     return users;
+  }
+
+  async getUsersByIds(userIds: string[]) {
+    return this.userRepository.find({
+      where: {
+        id: In(userIds),
+      },
+      select: ['id', 'firstName', 'lastName', 'headline', 'profilePicture'],
+    });
   }
 }

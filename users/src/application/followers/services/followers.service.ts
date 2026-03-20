@@ -116,4 +116,32 @@ export class FollowersService {
 
     return following.map((f) => f.following);
   }
+
+  async getFollowingCount(userId: string) {
+    const count = await this.followRepository.count({
+      where: { follower: { id: userId } },
+    });
+
+    return { count };
+  }
+  async getFollowersCount(userId: string) {
+    const count = await this.followRepository.count({
+      where: { following: { id: userId } },
+    });
+
+    return { count };
+  }
+
+  async getFollowStatus(currentUserId: string, targetUserId: string) {
+    const follow = await this.followRepository.findOne({
+      where: {
+        follower: { id: currentUserId },
+        following: { id: targetUserId },
+      },
+    });
+
+    return {
+      isFollowing: !!follow,
+    };
+  }
 }

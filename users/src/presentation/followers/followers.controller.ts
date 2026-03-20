@@ -33,8 +33,23 @@ export class FollowersController {
     return this.followersService.getFollowers(userId);
   }
 
+  @Get('following/count')
+  getFollowingCount(@Req() req: any) {
+    return this.followersService.getFollowingCount(req.user.userId);
+  }
+
   @Get('following/:userId')
   getFollowing(@Param('userId') userId: string) {
     return this.followersService.getFollowing(userId);
+  }
+
+  @Get(':userId/count')
+  getFollowersCount(@Param('userId') userId: string) {
+    return this.followersService.getFollowersCount(userId);
+  }
+
+  @Get('status/:userId')
+  getFollowStatus(@Req() req: any, @Param('userId') userId: string) {
+    return this.followersService.getFollowStatus(req.user.userId, userId);
   }
 }

@@ -37,4 +37,11 @@ export class FollowersService {
       withCredentials: true,
     });
   }
+
+  async getFollowStatus(userId: string, headers: any) {
+    return axios.get(`${this.baseUrl}/followers/status/${userId}`, {
+      headers,
+      withCredentials: true,
+    });
+  }
 }

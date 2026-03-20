@@ -10,9 +10,17 @@ export class LikesController {
 
   @Post()
   async toggleLike(@Req() req: any, @Res() res: express.Response) {
-    const response = await this.service.toggleLike(req.body, req.headers);
+    try {
+      const response = await this.service.toggleLike(req.body, req.headers);
 
-    return res.status(response.status).json(response.data);
+      return res.status(response.status).json(response.data);
+    } catch (error) {
+      console.error('Toggle like error:', error?.response || error.message);
+
+      return res.status(error?.response?.status || 500).json({
+        message: 'Failed to toggle like',
+      });
+    }
   }
 
   @Get(':postId')
@@ -21,8 +29,16 @@ export class LikesController {
     @Req() req: any,
     @Res() res: express.Response,
   ) {
-    const response = await this.service.getLikes(postId, req.headers);
+    try {
+      const response = await this.service.getLikes(postId, req.headers);
 
-    return res.status(response.status).json(response.data);
+      return res.status(response.status).json(response.data);
+    } catch (error) {
+      console.error('Get likes error:', error?.response || error.message);
+
+      return res.status(error?.response?.status || 500).json({
+        message: 'Failed to fetch likes',
+      });
+    }
   }
 }

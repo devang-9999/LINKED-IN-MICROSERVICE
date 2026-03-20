@@ -20,9 +20,17 @@ export class InteractionsController {
 
   @Post('comments')
   async createComment(@Req() req: any, @Res() res: express.Response) {
-    const response = await this.service.createComment(req.body, req.headers);
+    try {
+      const response = await this.service.createComment(req.body, req.headers);
 
-    return res.status(response.status).json(response.data);
+      return res.status(response.status).json(response.data);
+    } catch (error) {
+      console.error('Create comment error:', error?.response || error.message);
+
+      return res.status(error?.response?.status || 500).json({
+        message: 'Failed to create comment',
+      });
+    }
   }
 
   @Get('comments/:postId')
@@ -33,14 +41,22 @@ export class InteractionsController {
     @Req() req: any,
     @Res() res: express.Response,
   ) {
-    const response = await this.service.getComments(
-      postId,
-      page,
-      limit,
-      req.headers,
-    );
+    try {
+      const response = await this.service.getComments(
+        postId,
+        Number(page),
+        Number(limit),
+        req.headers,
+      );
 
-    return res.status(response.status).json(response.data);
+      return res.status(response.status).json(response.data);
+    } catch (error) {
+      console.error('Get comments error:', error?.response || error.message);
+
+      return res.status(error?.response?.status || 500).json({
+        message: 'Failed to fetch comments',
+      });
+    }
   }
 
   @Get('comments/replies/:commentId')
@@ -51,14 +67,22 @@ export class InteractionsController {
     @Req() req: any,
     @Res() res: express.Response,
   ) {
-    const response = await this.service.getReplies(
-      commentId,
-      page,
-      limit,
-      req.headers,
-    );
+    try {
+      const response = await this.service.getReplies(
+        commentId,
+        Number(page),
+        Number(limit),
+        req.headers,
+      );
 
-    return res.status(response.status).json(response.data);
+      return res.status(response.status).json(response.data);
+    } catch (error) {
+      console.error('Get replies error:', error?.response || error.message);
+
+      return res.status(error?.response?.status || 500).json({
+        message: 'Failed to fetch replies',
+      });
+    }
   }
 
   @Delete('comments/:commentId')
@@ -67,19 +91,38 @@ export class InteractionsController {
     @Req() req: any,
     @Res() res: express.Response,
   ) {
-    const response = await this.service.deleteComment(commentId, req.headers);
+    try {
+      const response = await this.service.deleteComment(commentId, req.headers);
 
-    return res.status(response.status).json(response.data);
+      return res.status(response.status).json(response.data);
+    } catch (error) {
+      console.error('Delete comment error:', error?.response || error.message);
+
+      return res.status(error?.response?.status || 500).json({
+        message: 'Failed to delete comment',
+      });
+    }
   }
 
   @Post('comment-likes')
   async toggleCommentLike(@Req() req: any, @Res() res: express.Response) {
-    const response = await this.service.toggleCommentLike(
-      req.body,
-      req.headers,
-    );
+    try {
+      const response = await this.service.toggleCommentLike(
+        req.body,
+        req.headers,
+      );
 
-    return res.status(response.status).json(response.data);
+      return res.status(response.status).json(response.data);
+    } catch (error) {
+      console.error(
+        'Toggle comment like error:',
+        error?.response || error.message,
+      );
+
+      return res.status(error?.response?.status || 500).json({
+        message: 'Failed to toggle comment like',
+      });
+    }
   }
 
   @Get('comment-likes/:commentId')
@@ -88,8 +131,22 @@ export class InteractionsController {
     @Req() req: any,
     @Res() res: express.Response,
   ) {
-    const response = await this.service.getCommentLikes(commentId, req.headers);
+    try {
+      const response = await this.service.getCommentLikes(
+        commentId,
+        req.headers,
+      );
 
-    return res.status(response.status).json(response.data);
+      return res.status(response.status).json(response.data);
+    } catch (error) {
+      console.error(
+        'Get comment likes error:',
+        error?.response || error.message,
+      );
+
+      return res.status(error?.response?.status || 500).json({
+        message: 'Failed to fetch comment likes',
+      });
+    }
   }
 }

@@ -20,10 +20,6 @@ import SendIcon from "@mui/icons-material/Send";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 
-import VideocamIcon from "@mui/icons-material/Videocam";
-import ImageIcon from "@mui/icons-material/Image";
-import ArticleIcon from "@mui/icons-material/Article";
-
 import PostModal from "../Post/PostModal";
 import RepostModal from "../Repost/Repost";
 
@@ -31,6 +27,8 @@ import { useFeed } from "./hooks/useFeed";
 import { useComments } from "./hooks/useComment";
 
 export default function FeedContainer() {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
   const {
     feed,
     likes,
@@ -47,11 +45,6 @@ export default function FeedContainer() {
     commentLikes,
     replyInput,
     openReply,
-    hasMoreComments,
-    commentPage,
-    hasMoreReplies,
-    replyPage,
-
     toggleComments,
     addComment,
     fetchComments,
@@ -67,16 +60,34 @@ export default function FeedContainer() {
   const [openRepostModal, setOpenRepostModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
 
-  // ================= COMMENTS RENDER =================
+  // ================= USER HELPERS =================
+  const getUserName = (user: any) => {
+    return `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "User";
+  };
+
+  const getUserAvatar = (user: any) => {
+    if (user?.profilePicture) {
+      return `${API_BASE_URL}${user.profilePicture}`;
+    }
+    return "/default-avatar.png";
+  };
+
+  // ================= COMMENTS =================
   const renderComments = (commentList: any[], postId: string, level = 0) => {
     return commentList.map((c) => (
       <Box key={c.id} sx={{ ml: level * 4, mt: 2 }}>
         <Stack direction="row" spacing={1}>
-          <Avatar src="/profile.jpg" />
+          <Avatar
+            src={
+              c.user?.profilePicture
+                ? `${API_BASE_URL}${c.user.profilePicture}`
+                : "/default-avatar.png"
+            }
+          />
 
           <Box>
             <Typography fontWeight={600}>
-              {c.user?.firstName || "User"} {c.user?.lastName || ""}
+              {getUserName(c.user)}
             </Typography>
 
             <Typography>{c.text}</Typography>
@@ -102,7 +113,6 @@ export default function FeedContainer() {
               </Typography>
             </Stack>
 
-            {/* REPLY INPUT */}
             {openReply[c.id] && (
               <Stack direction="row" spacing={1} mt={1}>
                 <TextField
@@ -122,20 +132,8 @@ export default function FeedContainer() {
               </Stack>
             )}
 
-            {/* REPLIES */}
             {c.replies &&
               renderComments(c.replies, postId, level + 1)}
-
-            {hasMoreReplies[c.id] && (
-              <Button
-                size="small"
-                onClick={() =>
-                  fetchReplies(c.id, (replyPage[c.id] || 1) + 1)
-                }
-              >
-                Load more replies
-              </Button>
-            )}
           </Box>
         </Stack>
       </Box>
@@ -144,30 +142,13 @@ export default function FeedContainer() {
 
   return (
     <Box>
-      {/* ================= CREATE POST ================= */}
+      {/* CREATE POST */}
       <Paper sx={{ p: 2, mb: 2 }}>
         <Stack direction="row" spacing={1}>
-          <Avatar src="/profile.jpg" />
+          <Avatar src="/default-avatar.png" />
           <Button fullWidth onClick={() => setOpenModal(true)}>
             Start a post
           </Button>
-        </Stack>
-
-        <Stack direction="row" justifyContent="space-around" mt={2}>
-          <Stack direction="row" spacing={1}>
-            <VideocamIcon />
-            <Typography>Video</Typography>
-          </Stack>
-
-          <Stack direction="row" spacing={1}>
-            <ImageIcon />
-            <Typography>Photo</Typography>
-          </Stack>
-
-          <Stack direction="row" spacing={1}>
-            <ArticleIcon />
-            <Typography>Article</Typography>
-          </Stack>
         </Stack>
       </Paper>
 
@@ -186,55 +167,42 @@ export default function FeedContainer() {
       />
 
       {/* ================= FEED ================= */}
-      {feed.map((item: any) => {
-        const isPost = item.type === "post";
-        const data = item.data || {};
-        const post = isPost ? data : data.post || {};
-
-        // 🔥 SAFETY FIX (prevents crash)
-        if (!post || !post.id) return null;
+      {(feed?.posts || []).map((post: any) => {
+        if (!post?.id) return null;
 
         return (
-          <Paper key={item.id || post.id} sx={{ p: 2, mb: 2 }}>
+          <Paper key={post.id} sx={{ p: 2, mb: 2 }}>
             {/* HEADER */}
             <Stack direction="row" spacing={1}>
-              <Avatar src="/profile.jpg" />
+              <Avatar src={getUserAvatar(post.user)} />
 
               <Box>
                 <Typography fontWeight={600}>
-                  {isPost
-                    ? `${post.user?.firstName || "User"} ${post.user?.lastName || ""}`
-                    : `${data.user?.firstName || "User"} ${data.user?.lastName || ""} reposted`}
+                  {getUserName(post.user)}
                 </Typography>
 
                 <Typography variant="caption">
                   {post.createdAt
-                    ? new Date(post.createdAt).toLocaleDateString()
+                    ? new Date(post.createdAt).toLocaleString()
                     : ""}
                 </Typography>
               </Box>
             </Stack>
 
             {/* CONTENT */}
-            {!isPost && data.message && (
-              <Typography mt={1}>{data.message}</Typography>
-            )}
-
-            <Typography mt={2}>
-              {post.content || ""}
-            </Typography>
+            <Typography mt={2}>{post.content || ""}</Typography>
 
             {/* MEDIA */}
             {post.mediaType === "image" && post.mediaUrl && (
               <img
-                src={`http://localhost:5000${post.mediaUrl}`}
+                src={`${API_BASE_URL}${post.mediaUrl}`}
                 width="100%"
               />
             )}
 
             {post.mediaType === "video" && post.mediaUrl && (
               <video controls width="100%">
-                <source src={`http://localhost:5000${post.mediaUrl}`} />
+                <source src={`${API_BASE_URL}${post.mediaUrl}`} />
               </video>
             )}
 
@@ -246,9 +214,7 @@ export default function FeedContainer() {
                 ) : (
                   <FavoriteBorderIcon />
                 )}
-                <Typography ml={1}>
-                  {likes[post.id] || 0}
-                </Typography>
+                <Typography ml={1}>{likes[post.id] || 0}</Typography>
               </Stack>
 
               <Stack direction="row" onClick={() => toggleComments(post.id)}>
@@ -278,20 +244,6 @@ export default function FeedContainer() {
               <Box mt={2}>
                 {comments[post.id] &&
                   renderComments(comments[post.id], post.id)}
-
-                {hasMoreComments[post.id] && (
-                  <Button
-                    size="small"
-                    onClick={() =>
-                      fetchComments(
-                        post.id,
-                        (commentPage[post.id] || 1) + 1
-                      )
-                    }
-                  >
-                    Load more
-                  </Button>
-                )}
 
                 <Stack direction="row" spacing={1} mt={2}>
                   <TextField

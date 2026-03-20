@@ -49,4 +49,14 @@ export class FollowersController {
 
     return res.status(response.status).json(response.data);
   }
+
+  @Get('status/:userId')
+  async getFollowStatus(
+    @Param('userId') userId: string,
+    @Req() req: any,
+    @Res() res: express.Response,
+  ) {
+    const response = await this.service.getFollowStatus(userId, req.headers);
+    return res.status(response.status).json(response.data);
+  }
 }

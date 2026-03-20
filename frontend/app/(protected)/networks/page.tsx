@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -45,13 +46,34 @@ export default function MyNetworkPage() {
 
   const loadData = async () => {
     try {
-      const [suggestionsRes, requestsRes] = await Promise.all([
-        API.get(`/users/profile/suggestions`),
-        API.get(`/users/connections/requests`),
-      ]);
+      let suggestions: User[] = [];
+      let requestsData: ConnectionRequest[] = [];
 
-      setUsers(suggestionsRes?.data || []);
-      setRequests(requestsRes?.data || []);
+      // =========================
+      // SUGGESTIONS
+      // =========================
+      try {
+        const res = await API.get(`/users/profile/suggestions`, {
+          headers: { "Cache-Control": "no-cache" },
+        });
+
+        suggestions = Array.isArray(res.data) ? res.data : [];
+      } catch (err) {
+        console.error("Suggestions error:", err);
+      }
+
+      // =========================
+      // REQUESTS (SAFE)
+      // =========================
+      try {
+        const res = await API.get(`/users/connections/requests`);
+        requestsData = Array.isArray(res.data) ? res.data : [];
+      } catch (err) {
+        console.error("Requests error (expected if not implemented):", err);
+      }
+
+      setUsers(suggestions);
+      setRequests(requestsData);
     } catch (error) {
       console.error("Network load error:", error);
     } finally {
@@ -67,7 +89,7 @@ export default function MyNetworkPage() {
   };
 
   // =========================
-  // ACCEPT CONNECTION
+  // ACCEPT REQUEST
   // =========================
   const acceptRequest = async (connectionId: string) => {
     try {
@@ -75,12 +97,12 @@ export default function MyNetworkPage() {
 
       await API.post(`/users/connections/accept/${connectionId}`);
 
-      // remove invitation
       setRequests((prev) => prev.filter((r) => r.id !== connectionId));
 
-      // remove from suggestions
       if (req) {
-        setUsers((prev) => prev.filter((user) => user.id !== req.sender.id));
+        setUsers((prev) =>
+          prev.filter((user) => user.id !== req.sender.id)
+        );
       }
     } catch (error) {
       console.error("Accept request failed:", error);
@@ -88,7 +110,7 @@ export default function MyNetworkPage() {
   };
 
   // =========================
-  // REJECT CONNECTION
+  // REJECT REQUEST
   // =========================
   const rejectRequest = async (connectionId: string) => {
     try {
@@ -96,17 +118,12 @@ export default function MyNetworkPage() {
 
       await API.post(`/users/connections/reject/${connectionId}`);
 
-      // remove invitation
       setRequests((prev) => prev.filter((r) => r.id !== connectionId));
 
-      // add back to suggestions
       if (req) {
         setUsers((prev) => {
-          const exists = prev.some((user) => user.id === req.sender.id);
-
-          if (exists) return prev;
-
-          return [...prev, req.sender];
+          const exists = prev.some((u) => u.id === req.sender.id);
+          return exists ? prev : [...prev, req.sender];
         });
       }
     } catch (error) {
@@ -123,14 +140,12 @@ export default function MyNetworkPage() {
       <LinkedInNavbar />
 
       <div className="my-network-container">
-        {/* LEFT SIDEBAR */}
         <aside className="left-column">
           <NetworkLeftSidebar />
         </aside>
 
-        {/* MAIN CONTENT */}
         <main className="main-column">
-          {/* INVITATIONS */}
+          {/* ================= INVITATIONS ================= */}
           {requests.length > 0 && (
             <Paper className="suggestion-section">
               <div className="suggestion-header">
@@ -161,12 +176,7 @@ export default function MyNetworkPage() {
                       {req.sender.firstName} {req.sender.lastName}
                     </Typography>
 
-                    <Typography
-                      sx={{
-                        fontSize: 13,
-                        color: "#666",
-                      }}
-                    >
+                    <Typography sx={{ fontSize: 13, color: "#666" }}>
                       {req.sender.headline}
                     </Typography>
                   </Box>
@@ -189,16 +199,14 @@ export default function MyNetworkPage() {
             </Paper>
           )}
 
-          {/* SUGGESTIONS */}
+          {/* ================= SUGGESTIONS ================= */}
           <div className="suggestion-section">
             <div className="suggestion-header">
               <h3>People you may know</h3>
             </div>
 
             <div className="suggestion-grid">
-              {users.length === 0 ? (
-                <div className="no-users">No suggestions available</div>
-              ) : (
+              {users.length > 0 ? (
                 users.map((user) => (
                   <SuggestionCard
                     key={user.id}
@@ -206,6 +214,8 @@ export default function MyNetworkPage() {
                     onRemove={removeUser}
                   />
                 ))
+              ) : (
+                <div className="no-users">No suggestions available</div>
               )}
             </div>
           </div>

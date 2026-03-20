@@ -3,18 +3,48 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Controller, Get, Patch, Param, Req, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Param,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 
 import express from 'express';
 import { ProfileService } from './profile.service';
 import { createProxyServer } from 'http-proxy';
+import { JwtAuthGuard } from 'src/jwt/jwt.gaurd';
 
 const proxy = createProxyServer({});
 
+@UseGuards(JwtAuthGuard)
 @Controller('users/profile')
 export class ProfileController {
   constructor(private readonly service: ProfileService) {}
 
+  @Get('suggestions')
+  async getSuggestions(@Req() req: any, @Res() res: express.Response) {
+    try {
+      const {
+        ['if-none-match']: _etag,
+        ['if-modified-since']: _modified,
+        ...cleanHeaders
+      } = req.headers;
+
+      const response = await this.service.getSuggestions(cleanHeaders);
+
+      return res.status(response.status).json(response.data);
+    } catch (error) {
+      console.error('Suggestions error:', error?.response || error.message);
+
+      return res.status(error?.response?.status || 500).json({
+        message: 'Failed to fetch suggestions',
+      });
+    }
+  }
   @Get('me')
   async getMyProfile(@Req() req: any, @Res() res: express.Response) {
     const response = await this.service.getMyProfile(req.headers);
@@ -54,27 +84,5 @@ export class ProfileController {
       target: `${process.env.USERS_SERVICE_URL}`,
       changeOrigin: true,
     });
-  }
-
-  @Get('suggestions')
-  async getSuggestions(@Req() req: any, @Res() res: express.Response) {
-    try {
-      // 🔥 REMOVE CACHE HEADERS (CRITICAL FIX)
-      const {
-        ['if-none-match']: _etag,
-        ['if-modified-since']: _modified,
-        ...cleanHeaders
-      } = req.headers;
-
-      const response = await this.service.getSuggestions(cleanHeaders);
-
-      return res.status(response.status).json(response.data);
-    } catch (error) {
-      console.error('Suggestions error:', error?.response || error.message);
-
-      return res.status(error?.response?.status || 500).json({
-        message: 'Failed to fetch suggestions',
-      });
-    }
   }
 }

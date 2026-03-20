@@ -53,7 +53,6 @@ export const useFeed = () => {
     const postsRes = await getPosts();
     const repostRes = await getReposts();
 
-    // ✅ FIX HERE
     const postsData = postsRes.data.posts || postsRes.data;
     const repostData = repostRes.data.reposts || repostRes.data;
 

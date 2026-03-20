@@ -6,9 +6,11 @@ import { UsersModule } from './users/users.module';
 import { JwtModule } from './jwt/jwt.module';
 import { JwtAuthGuard } from './jwt/jwt.gaurd';
 import { PostsModule } from './posts/posts.module';
+import { UploadProxyController } from './proxy.controller';
 
 @Module({
   imports: [AuthModule, UsersModule, JwtModule, PostsModule],
+  controllers: [UploadProxyController],
   providers: [
     {
       provide: APP_GUARD,
