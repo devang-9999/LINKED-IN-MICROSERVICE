@@ -25,7 +25,6 @@ export default function ProfileSections({
   onDeleteEducation,
   onDeleteSkill,
 }: any) {
-
   const formatDate = (date: string) => {
     if (!date) return "";
     return new Date(date).toLocaleDateString("en-US", {
@@ -36,9 +35,6 @@ export default function ProfileSections({
 
   return (
     <Box sx={{ mt: 3, display: "flex", flexDirection: "column", gap: 2 }}>
-
-      {/* ================= EXPERIENCE ================= */}
-
       {experience.length === 0 ? (
         <Paper
           elevation={0}
@@ -87,7 +83,6 @@ export default function ProfileSections({
 
           {experience.map((exp: any) => (
             <Box key={exp.id} sx={{ display: "flex", gap: 2, mt: 2 }}>
-              
               <Box
                 sx={{
                   width: 48,
@@ -123,9 +118,7 @@ export default function ProfileSections({
 
                 <Typography variant="body2" color="text.secondary">
                   {formatDate(exp.startDate)} –{" "}
-                  {exp.currentlyWorking
-                    ? "Present"
-                    : formatDate(exp.endDate)}
+                  {exp.currentlyWorking ? "Present" : formatDate(exp.endDate)}
                 </Typography>
 
                 {exp.description && (
@@ -274,14 +267,13 @@ export default function ProfileSections({
             {skills.map((skill: any) => (
               <Chip
                 key={skill.id}
-                label={skill.name}
+                label={skill.skill?.name}
                 onDelete={() => onDeleteSkill?.(skill.id)}
               />
             ))}
           </Box>
         </Paper>
       )}
-
     </Box>
   );
 }

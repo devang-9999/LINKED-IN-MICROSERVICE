@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
@@ -8,13 +7,43 @@ import axios from 'axios';
 export class ProfileService {
   private baseUrl = process.env.USERS_SERVICE_URL;
 
-  async getMyProfile(headers: any) {
-    const response = await axios.get(`${this.baseUrl}/profile/me`, {
-      headers,
-      withCredentials: true,
-    });
+  // async getMyProfile(headers: any) {
+  //   const response = await axios.get(`${this.baseUrl}/profile/me`, {
+  //     headers,
+  //     withCredentials: true,
+  //   });
 
-    return response;
+  //   return response;
+  // }
+
+  async getMyProfile(headers: any) {
+    try {
+      const cleanHeaders: any = {};
+
+      if (headers.cookie) {
+        cleanHeaders.cookie = headers.cookie;
+      }
+
+      // Optional: forward auth header if present
+      if (headers.authorization) {
+        cleanHeaders.authorization = headers.authorization;
+      }
+
+      const response = await axios.get(`${this.baseUrl}/profile/me`, {
+        headers: cleanHeaders,
+        withCredentials: true,
+        timeout: 5000,
+      });
+
+      return response;
+    } catch (error: any) {
+      console.error(
+        ' ProfileService.getMyProfile error:',
+        error?.response?.data || error.message,
+      );
+
+      throw error; // important → controller will handle it
+    }
   }
 
   async getPublicProfile(id: string, headers: any) {

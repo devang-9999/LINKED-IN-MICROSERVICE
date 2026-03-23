@@ -100,7 +100,6 @@ export default function CompleteProfilePage({ onClose }: any) {
     }
   };
 
-  // 🔥 FINAL SUBMIT (SINGLE API CALL)
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
@@ -118,12 +117,10 @@ export default function CompleteProfilePage({ onClose }: any) {
     try {
       const formData = new FormData();
 
-      // ✅ TEXT
       Object.entries(formDataState).forEach(([key, value]) => {
         if (value) formData.append(key, value);
       });
 
-      // ✅ FILES
       if (profileFile) {
         formData.append("profilePicture", profileFile);
       }
@@ -132,7 +129,6 @@ export default function CompleteProfilePage({ onClose }: any) {
         formData.append("coverPicture", coverFile);
       }
 
-      // 🔥 DO NOT SET Content-Type manually
       await axios.patch(`${API_BASE_URL}/users/profile`, formData, {
         withCredentials: true,
       });
@@ -171,7 +167,6 @@ export default function CompleteProfilePage({ onClose }: any) {
 
         <form onSubmit={handleSubmit}>
           <Stack spacing={3}>
-            {/* 🔹 COVER */}
             <Box>
               <Typography variant="subtitle1">Cover Picture</Typography>
               <Box
@@ -215,7 +210,6 @@ export default function CompleteProfilePage({ onClose }: any) {
               </Box>
             </Box>
 
-            {/* 🔹 PROFILE */}
             <Box textAlign="center">
               <Avatar
                 src={profilePreview || ""}
@@ -238,7 +232,6 @@ export default function CompleteProfilePage({ onClose }: any) {
               </Button>
             </Box>
 
-            {/* 🔹 INPUTS */}
             <TextField
               label="First Name"
               name="firstName"
@@ -275,7 +268,6 @@ export default function CompleteProfilePage({ onClose }: any) {
               onChange={handleChange}
             />
 
-            {/* 🔹 SUBMIT */}
             <Button
               type="submit"
               variant="contained"

@@ -34,7 +34,7 @@ export class PostsController {
   @Get()
   async getAll(@Req() req: any, @Res() res: express.Response) {
     try {
-      const data = await this.service.getAllPosts(req.headers);
+      const data = await this.service.getAllPosts(req);
       return res.status(200).json(data);
     } catch (error) {
       console.error('Get posts error:', error);

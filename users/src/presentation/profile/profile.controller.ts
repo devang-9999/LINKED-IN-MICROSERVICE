@@ -41,6 +41,13 @@ export class ProfileController {
   getMyProfile(@Req() req: any) {
     return this.profileService.getMyProfile(req.user.userId);
   }
+
+  @Get('bulk')
+  getUsersBulk(@Query('ids') ids: string) {
+    const userIds = ids.split(',');
+    return this.profileService.getUsersByIds(userIds);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   getPublicProfile(@Param('id') id: string) {
@@ -110,11 +117,5 @@ export class ProfileController {
       req.user.userId,
       file.filename,
     );
-  }
-
-  @Get('bulk')
-  getUsersBulk(@Query('ids') ids: string) {
-    const userIds = ids.split(',');
-    return this.profileService.getUsersByIds(userIds);
   }
 }

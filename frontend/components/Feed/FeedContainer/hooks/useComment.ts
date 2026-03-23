@@ -8,7 +8,7 @@ import {
   getRepliesApi,
 } from "../../../../redux/feed/feed.service";
 
-export const useComments = (userId: string) => {
+export const useComments = () => {
   const [comments, setComments] = useState<Record<string, any[]>>({});
   const [openComments, setOpenComments] = useState<Record<string, boolean>>({});
   const [commentInput, setCommentInput] = useState<Record<string, string>>({});
@@ -19,44 +19,64 @@ export const useComments = (userId: string) => {
 
   const [replyInput, setReplyInput] = useState<Record<string, string>>({});
   const [openReply, setOpenReply] = useState<Record<string, boolean>>({});
-
   const [replyPage, setReplyPage] = useState<Record<string, number>>({});
   const [hasMoreReplies, setHasMoreReplies] = useState<Record<string, boolean>>({});
 
+  // ================== COMMENT LIKES ==================
   const fetchCommentLikes = async (commentId: string) => {
-    const res = await getCommentLikesApi(commentId, userId);
+    try {
+      const res = await getCommentLikesApi(commentId);
 
-    setCommentLikes((prev) => ({
-      ...prev,
-      [commentId]: res.data.likesCount,
-    }));
+      setCommentLikes((prev) => ({
+        ...prev,
+        [commentId]: res.data.likesCount,
+      }));
+    } catch (err) {
+      console.error("Error fetching comment likes:", err);
+    }
   };
 
   const toggleCommentLike = async (commentId: string) => {
-    await toggleCommentLikeApi(commentId, userId);
-    fetchCommentLikes(commentId);
+    try {
+      await toggleCommentLikeApi({ commentId });
+
+      // ✅ Always sync (NO buggy optimistic logic)
+      fetchCommentLikes(commentId);
+    } catch (err) {
+      console.error("Error toggling comment like:", err);
+    }
   };
 
+  // ================== COMMENTS ==================
   const fetchComments = async (postId: string, page = 1) => {
-    const res = await getCommentsApi(postId, page);
-    const newComments = res.data.comments;
+    try {
+      const res = await getCommentsApi(postId, page);
 
-    newComments.forEach((c: any) => fetchCommentLikes(c.id));
+      const newComments = res.data.comments;
 
-    setComments((prev) => ({
-      ...prev,
-      [postId]:
-        page === 1
-          ? newComments
-          : [...(prev[postId] || []), ...newComments],
-    }));
+      // fetch likes for each comment
+      newComments.forEach((c: any) => fetchCommentLikes(c.id));
 
-    setCommentPage((prev) => ({ ...prev, [postId]: page }));
+      setComments((prev) => ({
+        ...prev,
+        [postId]:
+          page === 1
+            ? newComments
+            : [...(prev[postId] || []), ...newComments],
+      }));
 
-    setHasMoreComments((prev) => ({
-      ...prev,
-      [postId]: res.data.hasMore,
-    }));
+      setCommentPage((prev) => ({
+        ...prev,
+        [postId]: page,
+      }));
+
+      setHasMoreComments((prev) => ({
+        ...prev,
+        [postId]: res.data.hasMore,
+      }));
+    } catch (err) {
+      console.error("Error fetching comments:", err);
+    }
   };
 
   const toggleComments = (postId: string) => {
@@ -67,76 +87,103 @@ export const useComments = (userId: string) => {
       [postId]: !isOpen,
     }));
 
-    if (!isOpen) fetchComments(postId, 1);
+    if (!isOpen) {
+      fetchComments(postId, 1); // first 2 comments
+    }
+  };
+
+  const loadMoreComments = (postId: string) => {
+    const nextPage = (commentPage[postId] || 1) + 1;
+    fetchComments(postId, nextPage);
   };
 
   const addComment = async (postId: string) => {
     const text = commentInput[postId];
     if (!text) return;
 
-    await addCommentApi({ text, postId, userId });
+    try {
+      await addCommentApi({ text, postId });
 
-    setCommentInput((prev) => ({
-      ...prev,
-      [postId]: "",
-    }));
+      setCommentInput((prev) => ({
+        ...prev,
+        [postId]: "",
+      }));
 
-    fetchComments(postId, 1);
+      fetchComments(postId, 1); // refresh
+    } catch (err) {
+      console.error("Error adding comment:", err);
+    }
   };
 
-  // ================= REPLIES =================
+  // ================== REPLIES ==================
   const fetchReplies = async (commentId: string, page = 1) => {
-    const res = await getRepliesApi(commentId, page);
-    const newReplies = res.data.replies;
+    try {
+      const res = await getRepliesApi(commentId, page);
+      const newReplies = res.data.replies;
 
-    setComments((prev) => {
-      const updated = { ...prev };
+      setComments((prev) => {
+        const updated = { ...prev };
 
-      Object.keys(updated).forEach((postId) => {
-        updated[postId] = updated[postId].map((c) => {
-          if (c.id === commentId) {
-            return {
-              ...c,
-              replies:
-                page === 1
-                  ? newReplies
-                  : [...(c.replies || []), ...newReplies],
-            };
-          }
-          return c;
+        Object.keys(updated).forEach((postId) => {
+          updated[postId] = updated[postId].map((c) => {
+            if (c.id === commentId) {
+              return {
+                ...c,
+                replies:
+                  page === 1
+                    ? newReplies
+                    : [...(c.replies || []), ...newReplies],
+              };
+            }
+            return c;
+          });
         });
+
+        return updated;
       });
 
-      return updated;
-    });
+      setReplyPage((prev) => ({
+        ...prev,
+        [commentId]: page,
+      }));
 
-    setReplyPage((prev) => ({ ...prev, [commentId]: page }));
+      setHasMoreReplies((prev) => ({
+        ...prev,
+        [commentId]: res.data.hasMore,
+      }));
+    } catch (err) {
+      console.error("Error fetching replies:", err);
+    }
+  };
 
-    setHasMoreReplies((prev) => ({
-      ...prev,
-      [commentId]: res.data.hasMore,
-    }));
+  const loadMoreReplies = (commentId: string) => {
+    const nextPage = (replyPage[commentId] || 1) + 1;
+    fetchReplies(commentId, nextPage);
   };
 
   const addReply = async (postId: string, commentId: string) => {
     const text = replyInput[commentId];
     if (!text) return;
 
-    await addCommentApi({
-      text,
-      postId,
-      userId,
-      parentCommentId: commentId,
-    });
+    try {
+      await addCommentApi({
+        text,
+        postId,
+        parentCommentId: commentId,
+      });
 
-    setReplyInput((prev) => ({
-      ...prev,
-      [commentId]: "",
-    }));
+      setReplyInput((prev) => ({
+        ...prev,
+        [commentId]: "",
+      }));
 
-    fetchReplies(commentId, 1);
+      fetchReplies(commentId, 1);
+    } catch (err) {
+      console.error("Error adding reply:", err);
+    }
   };
 
+  // ================== RETURN ==================
   return {
     comments,
     openComments,
@@ -144,16 +191,20 @@ export const useComments = (userId: string) => {
     commentLikes,
     replyInput,
     openReply,
+
     hasMoreComments,
     commentPage,
     hasMoreReplies,
     replyPage,
 
     toggleComments,
+    loadMoreComments,
     addComment,
     fetchComments,
     toggleCommentLike,
+
     fetchReplies,
+    loadMoreReplies,
     addReply,
 
     setCommentInput,

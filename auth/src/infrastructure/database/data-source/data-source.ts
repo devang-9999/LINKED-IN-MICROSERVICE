@@ -2,6 +2,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import * as dotenv from 'dotenv';
 import { OutboxEvent } from 'src/infrastructure/outbox/outbox.entity';
 import { InboxEvent } from 'src/infrastructure/inbox/inbox.entity';
+// import { join } from 'path';
 
 dotenv.config({
   path:
@@ -17,11 +18,12 @@ export const dataSourceOptions: DataSourceOptions = {
   database: process.env.DB_NAME,
   synchronize: false,
   logging: false,
-
+  // entities: [join(__dirname, '/../../**/*.entity.{ts,js}')],
   entities:
     process.env.NODE_ENV === 'production'
       ? ['dist/**/*.entity.js', OutboxEvent, InboxEvent]
       : ['src/**/*.entity.ts', OutboxEvent, InboxEvent],
+  // migrations: [join(__dirname, '/../migrations/*.{ts,js}')],
 
   migrations:
     process.env.NODE_ENV === 'production'
@@ -32,7 +34,3 @@ export const dataSourceOptions: DataSourceOptions = {
 const dataSource = new DataSource(dataSourceOptions);
 
 export default dataSource;
-
-// entities: [join(__dirname, '/../../**/*.entity.{ts,js}')],
-
-// migrations: [join(__dirname, '/../migrations/*.{ts,js}')],

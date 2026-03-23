@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 "use client";
@@ -22,23 +23,30 @@ interface Post {
   mediaUrl?: string;
   mediaType?: string;
   userId: string;
+
+  user?: {
+    firstName?: string;
+    lastName?: string;
+    profilePicture?: string;
+  };
 }
 
 interface Props {
   open: boolean;
   onClose: () => void;
   post: Post;
-  userId: string;    
+  userId: string;
   onSuccess: () => void;
 }
+const getAvatar = (user: any) =>
+  user?.profilePicture
+    ? `http://localhost:4000/uploads/${user.profilePicture}`
+    : "/default-avatar.png";
 
+const getUserName = (user: any) =>
+  `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "User";
 
-export default function RepostModal({
-  open,
-  onClose,
-  post,
-  onSuccess,
-}: Props) {
+export default function RepostModal({ open, onClose, post, onSuccess }: Props) {
   const API_URL = "http://localhost:4000";
 
   const MEDIA_URL = "http://localhost:3003";
@@ -54,17 +62,17 @@ export default function RepostModal({
 
       await axios.post(
         `${API_URL}/reposts/${post.id}`,
-        { message },
+        message?.trim() ? { message: message.trim() } : {},
         {
           withCredentials: true,
-        }
+        },
       );
 
       setMessage("");
       onClose();
       onSuccess();
-    } catch (error) {
-      console.error("Repost failed", error);
+    } catch (error: any) {
+      console.error("Repost failed", error?.response?.data || error.message);
     } finally {
       setPosting(false);
     }
@@ -98,10 +106,10 @@ export default function RepostModal({
         />
 
         <Paper sx={{ mt: 2, p: 2 }}>
-          <Stack direction="row" spacing={1}>
-            <Avatar src="/profile.jpg" />
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Avatar src={getAvatar(post.user)} />
 
-            <Typography>Post</Typography>
+            <Typography fontWeight={600}>{getUserName(post.user)}</Typography>
           </Stack>
 
           <Typography mt={1}>{post.content}</Typography>

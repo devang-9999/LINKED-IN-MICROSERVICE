@@ -119,7 +119,6 @@ export default function ProfilePage() {
         />
       </div>
 
-      {/* 🔹 MENU */}
       {openMenu && (
         <div className="modal-wrapper" onClick={() => setOpenMenu(false)}>
           <div onClick={(e) => e.stopPropagation()}>
@@ -146,7 +145,6 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* 🔹 FORMS */}
       {openEducation && (
         <div className="modal-wrapper" onClick={() => setOpenEducation(false)}>
           <div onClick={(e) => e.stopPropagation()}>
@@ -171,7 +169,6 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* 🔥 PROFILE UPDATE MODAL */}
       {openUpdateProfile && (
         <div
           className="modal-wrapper"
@@ -181,7 +178,7 @@ export default function ProfilePage() {
             <CompleteProfilePage
               onClose={() => {
                 setOpenUpdateProfile(false);
-                refreshProfile(); // ✅ REFRESH AFTER UPDATE
+                refreshProfile();
               }}
             />
           </div>

@@ -1,9 +1,13 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
+
 import {
   Box,
   Paper,
@@ -20,23 +24,19 @@ import SendIcon from "@mui/icons-material/Send";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 
+import StartPostCard from "../StartAPost/StartAPost";
 import PostModal from "../Post/PostModal";
 import RepostModal from "../Repost/Repost";
 
 import { useFeed } from "./hooks/useFeed";
 import { useComments } from "./hooks/useComment";
 
+import "./FeedContainer.css";
+
 export default function FeedContainer() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-  const {
-    feed,
-    likes,
-    likedPosts,
-    handleLike,
-    userId,
-    loadFeed,
-  } = useFeed();
+  const { feed, likes, likedPosts, handleLike, loadFeed } = useFeed();
 
   const {
     comments,
@@ -47,208 +47,296 @@ export default function FeedContainer() {
     openReply,
     toggleComments,
     addComment,
-    fetchComments,
-    toggleCommentLike,
     fetchReplies,
     addReply,
     setCommentInput,
     setReplyInput,
     setOpenReply,
-  } = useComments(userId);
+    toggleCommentLike,
+
+    hasMoreComments,
+    commentPage,
+    fetchComments,
+
+    loadMoreComments,
+    hasMoreReplies,
+    loadMoreReplies,
+  } = useComments();
 
   const [openModal, setOpenModal] = useState(false);
   const [openRepostModal, setOpenRepostModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
 
-  // ================= USER HELPERS =================
-  const getUserName = (user: any) => {
-    return `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "User";
+  const [animateLike, setAnimateLike] = useState<Record<string, boolean>>({});
+
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  const [visibleComments, setVisibleComments] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/users/profile/me`, {
+          withCredentials: true,
+        });
+        setCurrentUser(res.data);
+      } catch (err) {
+        console.error("Failed to fetch current user", err);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  const getUserName = (user: any) =>
+    `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "User";
+
+  const getAvatar = (user: any) =>
+    user?.profilePicture
+      ? `${API_BASE_URL}/uploads/${user.profilePicture}`
+      : "/default-avatar.png";
+
+  const handleLikeClick = (postId: string) => {
+    handleLike(postId);
+
+    setAnimateLike((prev) => ({
+      ...prev,
+      [postId]: true,
+    }));
+
+    setTimeout(() => {
+      setAnimateLike((prev) => ({
+        ...prev,
+        [postId]: false,
+      }));
+    }, 400);
   };
 
-  const getUserAvatar = (user: any) => {
-    if (user?.profilePicture) {
-      return `${API_BASE_URL}${user.profilePicture}`;
-    }
-    return "/default-avatar.png";
+  const handleToggleComments = (postId: string) => {
+    toggleComments(postId);
+
+    setVisibleComments((prev) => ({
+      ...prev,
+      [postId]: prev[postId] || 2,
+    }));
   };
 
-  // ================= COMMENTS =================
-  const renderComments = (commentList: any[], postId: string, level = 0) => {
-    return commentList.map((c) => (
-      <Box key={c.id} sx={{ ml: level * 4, mt: 2 }}>
-        <Stack direction="row" spacing={1}>
-          <Avatar
-            src={
-              c.user?.profilePicture
-                ? `${API_BASE_URL}${c.user.profilePicture}`
-                : "/default-avatar.png"
-            }
-          />
+  const renderComments = (list: any[], postId: string, level = 0) => {
+    return list.map((c) => (
+      <Box key={c.id} sx={{ ml: level * 4 }} className="comment-wrapper">
+        <Avatar className="comment-avatar" src={getAvatar(c.user)} />
 
-          <Box>
-            <Typography fontWeight={600}>
-              {getUserName(c.user)}
+        <Box className="comment-body">
+          <Typography className="comment-user">
+            {getUserName(c.user)}
+          </Typography>
+
+          <Typography className="comment-text">{c.text}</Typography>
+
+          <Stack direction="row" spacing={2} className="comment-actions">
+            <Typography
+              className="comment-action"
+              onClick={() => toggleCommentLike(c.id)}
+            >
+              Like {commentLikes[c.id] ? `(${commentLikes[c.id]})` : ""}
             </Typography>
 
-            <Typography>{c.text}</Typography>
+            <Typography
+              className="comment-action"
+              onClick={() =>
+                setOpenReply((prev: any) => ({
+                  ...prev,
+                  [c.id]: !prev[c.id],
+                }))
+              }
+            >
+              Reply
+            </Typography>
 
-            <Stack direction="row" spacing={2} mt={1}>
-              <Typography onClick={() => toggleCommentLike(c.id)}>
-                Like {commentLikes[c.id] ? `(${commentLikes[c.id]})` : ""}
-              </Typography>
+            <Typography
+              className="comment-action"
+              onClick={() => fetchReplies(c.id, 1)}
+            >
+              View replies
+            </Typography>
+          </Stack>
 
-              <Typography
-                onClick={() =>
-                  setOpenReply((prev: any) => ({
+          {openReply[c.id] && (
+            <Stack direction="row" spacing={1} mt={1}>
+              <TextField
+                size="small"
+                fullWidth
+                value={replyInput[c.id] || ""}
+                onChange={(e) =>
+                  setReplyInput((prev: any) => ({
                     ...prev,
-                    [c.id]: !prev[c.id],
+                    [c.id]: e.target.value,
                   }))
                 }
-              >
-                Reply
-              </Typography>
-
-              <Typography onClick={() => fetchReplies(c.id, 1)}>
-                View replies
-              </Typography>
+              />
+              <Button onClick={() => addReply(postId, c.id)}>Reply</Button>
             </Stack>
+          )}
 
-            {openReply[c.id] && (
-              <Stack direction="row" spacing={1} mt={1}>
-                <TextField
-                  size="small"
-                  fullWidth
-                  value={replyInput[c.id] || ""}
-                  onChange={(e) =>
-                    setReplyInput((prev: any) => ({
-                      ...prev,
-                      [c.id]: e.target.value,
-                    }))
-                  }
-                />
-                <Button onClick={() => addReply(postId, c.id)}>
-                  Reply
-                </Button>
-              </Stack>
-            )}
+          {/* ✅ ADDED: SHOW REPLIES */}
+          {c.replies && renderComments(c.replies, postId, level + 1)}
 
-            {c.replies &&
-              renderComments(c.replies, postId, level + 1)}
-          </Box>
-        </Stack>
+          {/* ✅ ADDED: VIEW MORE REPLIES */}
+          {hasMoreReplies[c.id] && (
+            <Typography
+              sx={{
+                cursor: "pointer",
+                color: "#0a66c2",
+                fontSize: "13px",
+                mt: 0.5,
+              }}
+              onClick={() => loadMoreReplies(c.id)}
+            >
+              View more replies
+            </Typography>
+          )}
+        </Box>
       </Box>
     ));
   };
 
   return (
     <Box>
-      {/* CREATE POST */}
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Stack direction="row" spacing={1}>
-          <Avatar src="/default-avatar.png" />
-          <Button fullWidth onClick={() => setOpenModal(true)}>
-            Start a post
-          </Button>
-        </Stack>
-      </Paper>
+      <StartPostCard onOpen={() => setOpenModal(true)} user={currentUser} />
 
       <PostModal
         open={openModal}
         onClose={() => setOpenModal(false)}
         onSuccess={loadFeed}
+        user={currentUser}
       />
 
       <RepostModal
         open={openRepostModal}
         onClose={() => setOpenRepostModal(false)}
         post={selectedPost}
-        userId={userId}
+        userId={currentUser?.id}
         onSuccess={loadFeed}
       />
 
-      {/* ================= FEED ================= */}
-      {(feed?.posts || []).map((post: any) => {
+      {feed.map((item: any) => {
+        const isRepost = item.type === "repost";
+
+        const post = isRepost ? item.data.post : item.data;
+        const repostUser = isRepost ? item.data.user : null;
+        const repostMessage = isRepost ? item.data.message : null;
+
         if (!post?.id) return null;
 
-        return (
-          <Paper key={post.id} sx={{ p: 2, mb: 2 }}>
-            {/* HEADER */}
-            <Stack direction="row" spacing={1}>
-              <Avatar src={getUserAvatar(post.user)} />
+        const postComments = comments[post.id] || [];
 
+        return (
+          <Paper key={item.id} className="post-card">
+            {isRepost && (
+              <div className="repost-header">
+                <RepeatIcon fontSize="small" />
+                {getUserName(repostUser)} reposted this
+              </div>
+            )}
+
+            <Stack direction="row" spacing={2}>
+              <Avatar src={getAvatar(post.user)} />
               <Box>
-                <Typography fontWeight={600}>
+                <Typography className="post-user">
                   {getUserName(post.user)}
                 </Typography>
-
-                <Typography variant="caption">
-                  {post.createdAt
-                    ? new Date(post.createdAt).toLocaleString()
-                    : ""}
+                <Typography className="post-time">
+                  {new Date(post.createdAt).toLocaleString()}
                 </Typography>
               </Box>
             </Stack>
 
-            {/* CONTENT */}
-            <Typography mt={2}>{post.content || ""}</Typography>
+            {repostMessage && (
+              <Typography mt={1} fontStyle="italic">
+                {repostMessage}
+              </Typography>
+            )}
 
-            {/* MEDIA */}
-            {post.mediaType === "image" && post.mediaUrl && (
+            <Typography className="post-text">{post.content}</Typography>
+
+            {post.mediaType === "image" && (
               <img
                 src={`${API_BASE_URL}${post.mediaUrl}`}
-                width="100%"
+                className="post-image"
               />
             )}
 
-            {post.mediaType === "video" && post.mediaUrl && (
-              <video controls width="100%">
+            {post.mediaType === "video" && (
+              <video controls className="post-video">
                 <source src={`${API_BASE_URL}${post.mediaUrl}`} />
               </video>
             )}
 
-            {/* ACTIONS */}
-            <Stack direction="row" spacing={3} mt={2}>
-              <Stack direction="row" onClick={() => handleLike(post.id)}>
+            <div className="post-actions">
+              <div
+                className={`action-btn like-btn ${
+                  likedPosts[post.id] ? "liked" : ""
+                } ${animateLike[post.id] ? "animate" : ""}`}
+                onClick={() => handleLikeClick(post.id)}
+              >
                 {likedPosts[post.id] ? (
                   <FavoriteIcon />
                 ) : (
                   <FavoriteBorderIcon />
                 )}
-                <Typography ml={1}>{likes[post.id] || 0}</Typography>
-              </Stack>
+                <span>{likes[post.id] || 0}</span>
+              </div>
 
-              <Stack direction="row" onClick={() => toggleComments(post.id)}>
-                <ChatBubbleOutlineIcon />
-                <Typography ml={1}>Comment</Typography>
-              </Stack>
-
-              <Stack
-                direction="row"
-                onClick={() => {
-                  setSelectedPost(post);
-                  setOpenRepostModal(true);
-                }}
+              <div
+                className="action-btn"
+                onClick={() => handleToggleComments(post.id)}
               >
-                <RepeatIcon />
-                <Typography ml={1}>Repost</Typography>
-              </Stack>
+                <ChatBubbleOutlineIcon />
+                Comment
+              </div>
 
-              <Stack direction="row">
+              {post.user?.id !== currentUser?.id && (
+                <div
+                  className="action-btn"
+                  onClick={() => {
+                    setSelectedPost(post);
+                    setOpenRepostModal(true);
+                  }}
+                >
+                  <RepeatIcon />
+                  Repost
+                </div>
+              )}
+
+              <div className="action-btn">
                 <SendIcon />
-                <Typography ml={1}>Send</Typography>
-              </Stack>
-            </Stack>
+                Send
+              </div>
+            </div>
 
-            {/* COMMENTS */}
             {openComments[post.id] && (
-              <Box mt={2}>
-                {comments[post.id] &&
-                  renderComments(comments[post.id], post.id)}
+              <div className="comment-section">
+                {renderComments(postComments, post.id)}
+
+                {hasMoreComments[post.id] && (
+                  <Typography
+                    sx={{
+                      cursor: "pointer",
+                      color: "#0a66c2",
+                      mt: 1,
+                      fontSize: "14px",
+                    }}
+                    onClick={() => loadMoreComments(post.id)}
+                  >
+                    View more comments
+                  </Typography>
+                )}
 
                 <Stack direction="row" spacing={1} mt={2}>
                   <TextField
                     fullWidth
                     size="small"
+                    placeholder="Write a comment..."
                     value={commentInput[post.id] || ""}
                     onChange={(e) =>
                       setCommentInput((prev: any) => ({
@@ -257,12 +345,9 @@ export default function FeedContainer() {
                       }))
                     }
                   />
-
-                  <Button onClick={() => addComment(post.id)}>
-                    Post
-                  </Button>
+                  <Button onClick={() => addComment(post.id)}>Post</Button>
                 </Stack>
-              </Box>
+              </div>
             )}
           </Paper>
         );

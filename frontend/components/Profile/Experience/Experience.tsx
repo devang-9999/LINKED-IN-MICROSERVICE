@@ -68,7 +68,7 @@ export default function ExperienceForm({ onClose, onSuccess }: Props) {
     const payload = {
       title: form.title,
       employmentType: form.employmentType || undefined,
-      company: form.companyName, // ✅ backend expects this
+      company: form.companyName,
       location: form.location || undefined,
       description: form.description || undefined,
       startDate: formatDate(form.startMonth, form.startYear),
@@ -106,7 +106,6 @@ export default function ExperienceForm({ onClose, onSuccess }: Props) {
           * Indicates required
         </Typography>
 
-        {/* TITLE */}
         <TextField
           label="Title*"
           name="title"
@@ -115,9 +114,10 @@ export default function ExperienceForm({ onClose, onSuccess }: Props) {
           value={form.title}
           onChange={handleChange}
           required
+          
         />
 
-        {/* EMPLOYMENT TYPE */}
+
         <TextField
           select
           label="Employment type"
@@ -126,6 +126,11 @@ export default function ExperienceForm({ onClose, onSuccess }: Props) {
           margin="normal"
           value={form.employmentType}
           onChange={handleChange}
+           SelectProps={{
+              MenuProps: {
+                disablePortal: true,
+              },
+            }}
         >
           {employmentTypes.map((type) => (
             <MenuItem key={type} value={type}>
@@ -134,7 +139,6 @@ export default function ExperienceForm({ onClose, onSuccess }: Props) {
           ))}
         </TextField>
 
-        {/* COMPANY */}
         <TextField
           label="Company or organization*"
           name="companyName"
@@ -155,7 +159,6 @@ export default function ExperienceForm({ onClose, onSuccess }: Props) {
           onChange={handleChange}
         />
 
-        {/* CURRENTLY WORKING */}
         <FormControlLabel
           control={
             <Checkbox
@@ -168,7 +171,6 @@ export default function ExperienceForm({ onClose, onSuccess }: Props) {
           className="exp-checkbox"
         />
 
-        {/* START DATE */}
         <Typography className="exp-section">
           Start date*
         </Typography>

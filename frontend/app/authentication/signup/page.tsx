@@ -78,7 +78,7 @@ export default function LinkedInSignupPage() {
       console.log(backendRes);
       showSnackbar("Registration successful");
 
-      setTimeout(() => router.push("/profile/completeProfile"), 800);
+      setTimeout(() => router.push("/completeProfile"), 800);
     } catch (error: any) {
       if (error.code === "auth/email-already-in-use") {
         showSnackbar("Email already registered");

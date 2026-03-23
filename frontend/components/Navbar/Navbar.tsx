@@ -65,12 +65,12 @@ export default function LinkedInNavbar() {
 
         setProfile(profileRes.data);
 
-        const countRes = await axios.get(
-          `${API_BASE_URL}/users/notifications/unread-count`,
-          { withCredentials: true }
-        );
+        // const countRes = await axios.get(
+        //   `${API_BASE_URL}/users/notifications/unread-count`,
+        //   { withCredentials: true }
+        // );
 
-        setNotificationCount(countRes.data);
+        // setNotificationCount(countRes.data);
 
       } catch (error) {
         console.error("Navbar data fetch failed", error);

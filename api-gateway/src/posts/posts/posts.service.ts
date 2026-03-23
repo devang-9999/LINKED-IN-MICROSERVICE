@@ -37,11 +37,14 @@ export class PostsService {
     return response;
   }
 
-  async getAllPosts(headers: any) {
+  async getAllPosts(req: any) {
     try {
-      const postsResponse = await axios.get(`http://users-service:3002/posts`, {
-        headers,
-        withCredentials: true,
+      const cookie = req.headers.cookie;
+
+      const postsResponse = await axios.get(`http://posts-service:3003/posts`, {
+        headers: {
+          cookie,
+        },
       });
 
       const posts = postsResponse.data?.posts || [];
@@ -58,25 +61,26 @@ export class PostsService {
         ...new Set(posts.map((p: any) => p.userId).filter(Boolean)),
       ];
 
-      console.log(userIds, 'bhjsfhasghsdgsdgsljkbsadfsabasdjk');
-
       let users: any[] = [];
 
       if (userIds.length > 0) {
         const usersResponse = await axios.get(
-          `${process.env.USERS_SERVICE_URL}/users/bulk`,
+          `http://users-service:3002/profile/bulk`,
           {
             params: { ids: userIds.join(',') },
-            headers,
-            withCredentials: true,
+            headers: {
+              cookie,
+            },
           },
         );
-
         users = usersResponse.data || [];
       }
 
       const userMap = new Map(users.map((u: any) => [u.id, u]));
-
+      console.log(
+        userMap,
+        '-------------------------------------------------->',
+      );
       const enrichedPosts = posts.map((post: any) => ({
         ...post,
         user: userMap.get(post.userId) || null,

@@ -1,27 +1,65 @@
+/* ================= START POST ================= */
 .start-post-card {
-  border-radius: 10px;
-  padding: 12px 16px;
-  margin-bottom: 12px;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+  background: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .start-post-input {
   justify-content: flex-start !important;
   text-transform: none !important;
   border-radius: 30px !important;
+  padding: 10px 16px !important;
+  border: 1px solid #ddd !important;
+  color: gray !important;
+  transition: background 0.2s ease;
+}
+
+.start-post-input:hover {
+  background: #f3f2ef;
 }
 
 .start-post-actions {
-  margin-top: 10px;
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
 }
 
-.video-icon { color: #378fe9; }
-.photo-icon { color: #45bd62; }
-.article-icon { color: #e16745; }
+.start-action-btn {
+  flex: 1;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 8px 0;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
 
+.start-action-btn:hover {
+  background: #f3f2ef;
+}
+
+.video-icon {
+  color: #378fe9;
+}
+.photo-icon {
+  color: #45bd62;
+}
+.article-icon {
+  color: #e16745;
+}
+
+/* ================= POST CARD ================= */
 .post-card {
   padding: 16px;
-  border-radius: 10px;
+  border-radius: 12px;
   margin-bottom: 14px;
+  background: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .post-user {
@@ -35,23 +73,72 @@
 
 .post-text {
   margin-top: 10px;
+  font-size: 14px;
 }
 
-.post-image {
+/* ================= MEDIA ================= */
+.post-image,
+.post-video {
   width: 100%;
-  border-radius: 8px;
-  margin-top: 10px;
+  border-radius: 10px;
+  margin-top: 12px;
 }
 
+/* ================= ACTIONS ================= */
 .post-actions {
   display: flex;
-  justify-content: space-around;
-  margin-top: 10px;
+  justify-content: space-between; /* FIXED */
+  margin-top: 12px;
   padding-top: 10px;
   border-top: 1px solid #eee;
-  cursor: pointer;
 }
 
+.action-btn {
+  flex: 1; /* FIXED alignment */
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 8px 0;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.action-btn:hover {
+  background: #f3f2ef;
+}
+
+/* ================= LIKE ================= */
+.like-btn {
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.like-btn.liked {
+  color: #e0245e;
+  transform: scale(1.05);
+}
+
+.like-btn.animate {
+  animation: likeBounce 0.4s ease;
+}
+
+@keyframes likeBounce {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.4);
+  }
+  60% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ================= COMMENTS ================= */
 .comment-section {
   margin-top: 12px;
 }
@@ -70,7 +157,7 @@
 .comment-body {
   background: #f3f2ef;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: 12px;
   width: 100%;
 }
 
@@ -93,39 +180,17 @@
   cursor: pointer;
 }
 
-
-.like-btn {
-  cursor: pointer;
-  transition: transform 0.2s ease;
+.comment-action:hover {
+  text-decoration: underline;
 }
 
-.like-btn.liked {
-  color: #e0245e;
-}
-
-.like-btn.animate {
-  animation: likeBounce 0.4s ease;
-}
-
-@keyframes likeBounce {
-  0% {
-    transform: scale(1);
-  }
-  30% {
-    transform: scale(1.4);
-  }
-  60% {
-    transform: scale(0.9);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.post-video{
-  width:100%;
-  border-radius:8px;
-  margin-top:10px;
+.repost-header {
+  font-size: 12px;
+  color: gray;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .repost-wrapper {
@@ -133,4 +198,5 @@
   padding: 12px;
   border-radius: 10px;
   margin-top: 10px;
+  background: #fafafa;
 }

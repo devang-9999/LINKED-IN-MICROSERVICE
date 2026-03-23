@@ -24,7 +24,7 @@ async function bootstrap() {
   app.useStaticAssets('uploads', {
     prefix: '/uploads/',
   });
-  const port = process.env.PORT || 3002;
+  const port = 3002;
 
   await app.listen(port);
 

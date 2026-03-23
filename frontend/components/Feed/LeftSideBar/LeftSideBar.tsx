@@ -23,29 +23,41 @@ export default function LeftSidebar() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
+
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchProfile = async () => {
       try {
-        const profileRes = await axios.get(
-          "http://localhost:4000/users/profile/me",
+        const res = await axios.get(
+          `${API_BASE_URL}/users/profile/me`,
           {
             withCredentials: true,
           }
         );
 
-        setProfile(profileRes.data);
+        setProfile(res.data);
       } catch (error) {
-        console.error("Profile fetch failed", error);
+        console.error("❌ Profile fetch failed:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, []);
+    if (API_BASE_URL) {
+      fetchProfile();
+    }
+  }, [API_BASE_URL]);
 
-  // 🔥 IMPORTANT: uploads should come from users-service (not gateway usually)
-  const backendUrl = "http://localhost:3002/uploads/";
+  // ✅ SAFE IMAGE URL BUILDER
+  const getImageUrl = (path?: string) => {
+    if (!path) return undefined;
+    return `${API_BASE_URL}/uploads/${path}`;
+  };
+
+  const fullName =
+    profile?.firstName || profile?.lastName
+      ? `${profile?.firstName ?? ""} ${profile?.lastName ?? ""}`.trim()
+      : "User";
 
   if (loading) {
     return <div className="profile-loading">Loading profile...</div>;
@@ -54,33 +66,34 @@ export default function LeftSidebar() {
   return (
     <Box className="left-sidebar">
       <Paper className="profile-card">
+        {/* COVER */}
         <div
           className="profile-cover"
           style={{
             backgroundImage: profile?.coverPicture
-              ? `url(${backendUrl + profile.coverPicture})`
+              ? `url(${getImageUrl(profile.coverPicture)})`
               : undefined,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         />
 
+        {/* AVATAR */}
         <Avatar
-          src={
-            profile?.profilePicture
-              ? backendUrl + profile.profilePicture
-              : undefined
-          }
+          src={getImageUrl(profile?.profilePicture)}
           className="profile-avatar"
-        />
+        >
+          {!profile?.profilePicture && fullName.charAt(0)}
+        </Avatar>
 
+        {/* INFO */}
         <div className="profile-info">
           <Typography className="profile-name">
-            {profile?.firstName} {profile?.lastName}
+            {fullName}
           </Typography>
 
           <Typography className="profile-headline">
-            {profile?.headline}
+            {profile?.headline || "No headline"}
           </Typography>
 
           <Typography className="profile-location">
@@ -94,6 +107,7 @@ export default function LeftSidebar() {
         </div>
       </Paper>
 
+      {/* PREMIUM */}
       <Paper className="premium-card">
         <Typography className="premium-text">
           Access exclusive tools & insights
@@ -105,6 +119,7 @@ export default function LeftSidebar() {
         </div>
       </Paper>
 
+      {/* ANALYTICS */}
       <Paper className="analytics-card">
         <Typography className="analytics-title">
           View all analytics
@@ -124,6 +139,7 @@ export default function LeftSidebar() {
         </div>
       </Paper>
 
+      {/* SHORTCUTS */}
       <Paper className="shortcuts-card">
         <div className="shortcut-row">
           <BookmarkIcon />
