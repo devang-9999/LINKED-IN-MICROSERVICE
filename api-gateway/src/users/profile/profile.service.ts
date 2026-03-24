@@ -83,4 +83,11 @@ export class ProfileService {
 
     return response;
   }
+
+  async getNetworkOverview(headers: any) {
+    return axios.get(`${this.baseUrl}/profile/network/overview`, {
+      headers,
+      withCredentials: true,
+    });
+  }
 }

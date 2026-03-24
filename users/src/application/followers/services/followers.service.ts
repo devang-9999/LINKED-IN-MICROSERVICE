@@ -49,7 +49,7 @@ export class FollowersService {
     });
 
     if (existingFollow) {
-      throw new BadRequestException('Already following');
+      return { message: 'Already following' };
     }
 
     const follow = this.followRepository.create({
@@ -84,11 +84,13 @@ export class FollowersService {
       throw new NotFoundException('Follow not found');
     }
 
+    const followId = follow.id;
+
     await this.followRepository.remove(follow);
 
     await this.outboxRepository.save({
       aggregateType: 'follow',
-      aggregateId: follow.id,
+      aggregateId: followId,
       eventType: 'user.unfollowed',
       payload: {
         followerId: currentUserId,

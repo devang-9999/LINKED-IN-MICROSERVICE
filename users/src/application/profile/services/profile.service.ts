@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
@@ -138,6 +140,7 @@ export class ProfileService {
     });
 
     const followedIds = follows.map((f) => f.following?.id).filter(Boolean);
+
     const connections = await this.connectionRepository.find({
       where: [
         { sender: { id: currentUserId } },
@@ -146,8 +149,7 @@ export class ProfileService {
       relations: ['sender', 'receiver'],
     });
 
-    const acceptedIds: string[] = [];
-    const pendingIds: string[] = [];
+    const connectionMap = new Map();
 
     connections.forEach((c) => {
       const otherUserId =
@@ -155,26 +157,15 @@ export class ProfileService {
 
       if (!otherUserId) return;
 
-      if (c.status === ConnectionStatus.ACCEPTED) {
-        acceptedIds.push(otherUserId);
-      }
-
-      if (c.status === ConnectionStatus.PENDING) {
-        pendingIds.push(otherUserId);
-      }
+      connectionMap.set(otherUserId, {
+        status: c.status,
+        isSender: c.sender?.id === currentUserId,
+      });
     });
 
-    const excludedIds = [
-      ...new Set([
-        currentUserId,
-        ...followedIds,
-        ...acceptedIds,
-        ...pendingIds,
-      ]),
-    ];
     const users = await this.userRepository.find({
       where: {
-        id: Not(In(excludedIds.length ? excludedIds : [currentUserId])),
+        id: Not(In([currentUserId])),
       },
       select: [
         'id',
@@ -187,7 +178,35 @@ export class ProfileService {
       take: 20,
     });
 
-    return users;
+    return Promise.all(
+      users
+        .filter((user) => {
+          const connection = connectionMap.get(user.id);
+
+          // ❌ remove if already connected
+          if (connection?.status === 'ACCEPTED') return false;
+
+          // ❌ remove if already following
+          if (followedIds.includes(user.id)) return false;
+
+          return true;
+        })
+        .map(async (user) => {
+          const connection = connectionMap.get(user.id);
+
+          const followersCount = await this.followRepository.count({
+            where: { following: { id: user.id } },
+          });
+
+          return {
+            ...user,
+            isFollowing: followedIds.includes(user.id),
+            followersCount,
+            connectionStatus: connection?.status || null,
+            isSender: connection?.isSender || false,
+          };
+        }),
+    );
   }
 
   async getUsersByIds(userIds: string[]) {
@@ -197,5 +216,37 @@ export class ProfileService {
       },
       select: ['id', 'firstName', 'lastName', 'headline', 'profilePicture'],
     });
+  }
+
+  async getNetworkOverview(currentUserId: string) {
+    const connections = await this.connectionRepository.count({
+      where: [
+        {
+          sender: { id: currentUserId },
+          status: ConnectionStatus.ACCEPTED,
+        },
+        {
+          receiver: { id: currentUserId },
+          status: ConnectionStatus.ACCEPTED,
+        },
+      ],
+    });
+
+    const following = await this.followRepository.count({
+      where: { follower: { id: currentUserId } },
+    });
+
+    const invitesSent = await this.connectionRepository.count({
+      where: {
+        sender: { id: currentUserId },
+        status: ConnectionStatus.PENDING,
+      },
+    });
+
+    return {
+      connections,
+      following,
+      invitesSent,
+    };
   }
 }

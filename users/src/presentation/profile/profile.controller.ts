@@ -118,4 +118,9 @@ export class ProfileController {
       file.filename,
     );
   }
+  @Get('network/overview')
+  @UseGuards(JwtAuthGuard)
+  getOverview(@Req() req: any) {
+    return this.profileService.getNetworkOverview(req.user.userId);
+  }
 }

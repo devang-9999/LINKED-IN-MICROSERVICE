@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
@@ -7,14 +10,31 @@ export class FollowersService {
   private baseUrl = process.env.USERS_SERVICE_URL;
 
   async follow(userId: string, headers: any) {
-    return axios.post(
-      `${this.baseUrl}/followers/${userId}`,
-      {},
-      {
-        headers,
-        withCredentials: true,
-      },
-    );
+    try {
+      const cleanHeaders: any = {};
+
+      if (headers.authorization) {
+        cleanHeaders.authorization = headers.authorization;
+      }
+
+      if (headers.cookie) {
+        cleanHeaders.cookie = headers.cookie;
+      }
+
+      const res = await axios.post(
+        `${this.baseUrl}/followers/${userId}`,
+        {},
+        {
+          headers: cleanHeaders,
+          withCredentials: true,
+        },
+      );
+
+      return res.data;
+    } catch (error: any) {
+      console.error('FOLLOW ERROR:', error?.response?.data);
+      throw new Error(error?.response?.data?.message || error.message);
+    }
   }
 
   async unfollow(userId: string, headers: any) {

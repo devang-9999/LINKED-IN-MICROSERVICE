@@ -53,7 +53,7 @@ export class ConnectionsService {
     });
 
     if (existing) {
-      throw new BadRequestException('Connection already exists');
+      return { message: 'Connection already exists' };
     }
 
     const connection = this.connectionRepository.create({
@@ -129,5 +129,95 @@ export class ConnectionsService {
     });
 
     return { message: 'Connection rejected' };
+  }
+
+  async cancelRequest(currentUserId: string, targetUserId: string) {
+    const connection = await this.connectionRepository.findOne({
+      where: {
+        sender: { id: currentUserId },
+        receiver: { id: targetUserId },
+        status: ConnectionStatus.PENDING,
+      },
+    });
+
+    if (!connection) {
+      throw new NotFoundException('Pending request not found');
+    }
+
+    await this.connectionRepository.remove(connection);
+
+    return { message: 'Connection request cancelled' };
+  }
+
+  async getConnectionStatus(currentUserId: string, targetUserId: string) {
+    const connection = await this.connectionRepository.findOne({
+      where: [
+        { sender: { id: currentUserId }, receiver: { id: targetUserId } },
+        { sender: { id: targetUserId }, receiver: { id: currentUserId } },
+      ],
+    });
+
+    if (!connection) {
+      return { status: null };
+    }
+
+    return {
+      status: connection.status,
+      isSender: connection.sender.id === currentUserId,
+    };
+  }
+
+  async getReceivedRequests(currentUserId: string) {
+    const requests = await this.connectionRepository.find({
+      where: {
+        receiver: { id: currentUserId },
+        status: ConnectionStatus.PENDING,
+      },
+      relations: ['sender'],
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    return requests.map((req) => ({
+      id: req.id,
+      status: req.status,
+      createdAt: req.createdAt,
+
+      sender: {
+        id: req.sender.id,
+        firstName: req.sender.firstName,
+        lastName: req.sender.lastName,
+        headline: req.sender.headline,
+        profilePicture: req.sender.profilePicture,
+      },
+    }));
+  }
+
+  async getSentRequests(currentUserId: string) {
+    const requests = await this.connectionRepository.find({
+      where: {
+        sender: { id: currentUserId },
+        status: ConnectionStatus.PENDING,
+      },
+      relations: ['receiver'],
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    return requests.map((req) => ({
+      id: req.id,
+      status: req.status,
+      createdAt: req.createdAt,
+
+      receiver: {
+        id: req.receiver.id,
+        firstName: req.receiver.firstName,
+        lastName: req.receiver.lastName,
+        headline: req.receiver.headline,
+        profilePicture: req.receiver.profilePicture,
+      },
+    }));
   }
 }

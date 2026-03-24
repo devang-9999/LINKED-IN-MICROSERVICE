@@ -1,11 +1,11 @@
 .network-page-container {
-  max-width: 46rem;
+  max-width: 65rem;
   padding: 0 16px;
   margin-left: -1rem;
 }
 
 .invite-card {
-  width: 100%;
+  width: 102%;
   display: flex;
   justify-content: space-between;
   align-items: center;

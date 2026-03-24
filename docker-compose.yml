@@ -16,7 +16,7 @@ services:
     depends_on:
       - auth-service
       - users-service
-      - posts-service   # ✅ added
+      - posts-service
     networks:
       - linkedin-network
 
@@ -71,6 +71,22 @@ services:
     networks:
       - linkedin-network
 
+  notifications-service:
+    build: ./notifications
+    container_name: notifications-service
+    ports:
+      - "3004:3004"
+    env_file:
+      - ./notifications/.env.docker
+    volumes:
+      - ./notifications:/app
+      - /app/node_modules
+    command: npm run start:dev
+    depends_on:
+      - postgres
+    networks:
+      - linkedin-network
+
   postgres:
     image: postgres:15
     container_name: linkedin-postgres
@@ -78,7 +94,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: linkedin_users   
+      POSTGRES_DB: linkedin_users
     ports:
       - "5432:5432"
     volumes:

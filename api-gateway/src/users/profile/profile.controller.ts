@@ -75,6 +75,12 @@ export class ProfileController {
     }
   }
 
+  @Get('network/overview')
+  async getOverview(@Req() req: any, @Res() res: express.Response) {
+    const response = await this.service.getNetworkOverview(req.headers);
+    return res.status(response.status).json(response.data);
+  }
+
   @Get(':id')
   async getPublicProfile(
     @Param('id') id: string,

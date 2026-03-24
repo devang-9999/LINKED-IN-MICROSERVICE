@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,6 +10,7 @@ import LinkedInNavbar from "@/components/Navbar/Navbar";
 import { Box, Paper, Avatar, Typography, Button } from "@mui/material";
 
 import "./Networks.css";
+import InviteConnectionsCard from "@/components/MyNetworks/InviteConnectionCard/Card";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -27,7 +27,6 @@ interface User {
   lastName?: string;
   headline?: string;
   profilePicture?: string;
-  coverPicture?: string;
 }
 
 interface ConnectionRequest {
@@ -46,34 +45,15 @@ export default function MyNetworkPage() {
 
   const loadData = async () => {
     try {
-      let suggestions: User[] = [];
-      let requestsData: ConnectionRequest[] = [];
-
-      // =========================
-      // SUGGESTIONS
-      // =========================
-      try {
-        const res = await API.get(`/users/profile/suggestions`, {
+      const [suggestionsRes, requestsRes] = await Promise.all([
+        API.get(`/users/profile/suggestions`, {
           headers: { "Cache-Control": "no-cache" },
-        });
+        }),
+        API.get(`/users/connections/recieved/requests`),
+      ]);
 
-        suggestions = Array.isArray(res.data) ? res.data : [];
-      } catch (err) {
-        console.error("Suggestions error:", err);
-      }
-
-      // =========================
-      // REQUESTS (SAFE)
-      // =========================
-      try {
-        const res = await API.get(`/users/connections/requests`);
-        requestsData = Array.isArray(res.data) ? res.data : [];
-      } catch (err) {
-        console.error("Requests error (expected if not implemented):", err);
-      }
-
-      setUsers(suggestions);
-      setRequests(requestsData);
+      setUsers(Array.isArray(suggestionsRes.data) ? suggestionsRes.data : []);
+      setRequests(Array.isArray(requestsRes.data) ? requestsRes.data : []);
     } catch (error) {
       console.error("Network load error:", error);
     } finally {
@@ -81,16 +61,10 @@ export default function MyNetworkPage() {
     }
   };
 
-  // =========================
-  // REMOVE CARD
-  // =========================
   const removeUser = (id: string) => {
     setUsers((prev) => prev.filter((user) => user.id !== id));
   };
 
-  // =========================
-  // ACCEPT REQUEST
-  // =========================
   const acceptRequest = async (connectionId: string) => {
     try {
       const req = requests.find((r) => r.id === connectionId);
@@ -109,9 +83,6 @@ export default function MyNetworkPage() {
     }
   };
 
-  // =========================
-  // REJECT REQUEST
-  // =========================
   const rejectRequest = async (connectionId: string) => {
     try {
       const req = requests.find((r) => r.id === connectionId);
@@ -145,12 +116,26 @@ export default function MyNetworkPage() {
         </aside>
 
         <main className="main-column">
-          {/* ================= INVITATIONS ================= */}
+          <InviteConnectionsCard />
+
+          {/* ✅ INVITATIONS (FIXED + CLEAN) */}
           {requests.length > 0 && (
-            <Paper className="suggestion-section">
-              <div className="suggestion-header">
-                <h3>Invitations</h3>
-              </div>
+            <Paper sx={{ mb: 2 }}>
+              <Box
+                sx={{
+                  p: 2,
+                  fontWeight: 600,
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Typography fontWeight={600}>Invitations</Typography>
+                <Typography
+                  sx={{ color: "#0a66c2", cursor: "pointer", fontSize: 14 }}
+                >
+                  See all
+                </Typography>
+              </Box>
 
               {requests.map((req) => (
                 <Box
@@ -160,7 +145,7 @@ export default function MyNetworkPage() {
                     alignItems: "center",
                     gap: 2,
                     p: 2,
-                    borderBottom: "1px solid #eee",
+                    borderTop: "1px solid #eee",
                   }}
                 >
                   <Avatar
@@ -172,17 +157,18 @@ export default function MyNetworkPage() {
                   />
 
                   <Box sx={{ flex: 1 }}>
-                    <Typography sx={{ fontWeight: 600 }}>
+                    <Typography fontWeight={600}>
                       {req.sender.firstName} {req.sender.lastName}
                     </Typography>
 
-                    <Typography sx={{ fontSize: 13, color: "#666" }}>
+                    <Typography fontSize={13} color="#666">
                       {req.sender.headline}
                     </Typography>
                   </Box>
 
                   <Button
                     variant="outlined"
+                    color="inherit"
                     onClick={() => rejectRequest(req.id)}
                   >
                     Ignore

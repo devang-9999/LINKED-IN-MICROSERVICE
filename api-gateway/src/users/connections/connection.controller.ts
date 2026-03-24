@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Controller, Post, Param, Req, Res } from '@nestjs/common';
+import { Controller, Post, Param, Req, Res, Delete, Get } from '@nestjs/common';
 
 import express from 'express';
 import { ConnectionsService } from './connection.service';
@@ -14,9 +16,17 @@ export class ConnectionsController {
     @Req() req: any,
     @Res() res: express.Response,
   ) {
-    const response = await this.service.sendRequest(userId, req.headers);
+    try {
+      const response = await this.service.sendRequest(userId, req.headers);
 
-    return res.status(response.status).json(response.data);
+      return res.status(response.status).json(response.data);
+    } catch (error: any) {
+      console.error('CONNECTION ERROR:', error?.response?.data);
+
+      return res.status(error?.response?.status || 400).json({
+        message: error?.response?.data?.message || 'Connection request failed',
+      });
+    }
   }
 
   @Post('accept/:connectionId')
@@ -39,5 +49,69 @@ export class ConnectionsController {
     const response = await this.service.reject(connectionId, req.headers);
 
     return res.status(response.status).json(response.data);
+  }
+  @Delete('request/:userId')
+  async cancelRequest(
+    @Param('userId') userId: string,
+    @Req() req: any,
+    @Res() res: express.Response,
+  ) {
+    try {
+      const response = await this.service.cancelRequest(userId, req.headers);
+
+      return res.status(response.status).json(response.data);
+    } catch (error: any) {
+      return res.status(error?.response?.status || 400).json({
+        message: error?.response?.data?.message || 'Cancel failed',
+      });
+    }
+  }
+
+  @Get('status/:userId')
+  async getStatus(
+    @Param('userId') userId: string,
+    @Req() req: any,
+    @Res() res: express.Response,
+  ) {
+    try {
+      const response = await this.service.getConnectionStatus(
+        userId,
+        req.headers,
+      );
+
+      return res.status(response.status).json(response.data);
+    } catch (error: any) {
+      return res.status(400).json({
+        message: error?.response?.data?.message || 'Status fetch failed',
+      });
+    }
+  }
+
+  @Get('recieved/requests')
+  async getReceived(@Req() req: any, @Res() res: express.Response) {
+    try {
+      const response = await this.service.getReceivedRequests(req.headers);
+
+      return res.status(response.status).json(response.data);
+    } catch (error: any) {
+      return res.status(error?.response?.status || 400).json({
+        message:
+          error?.response?.data?.message || 'Failed to fetch received requests',
+      });
+    }
+  }
+
+  @Get('requests/sent')
+  async getSent(@Req() req: any, @Res() res: express.Response) {
+    try {
+      const response = await this.service.getSentRequests(req.headers);
+
+      return res.status(response.status).json(response.data);
+    } catch (error: any) {
+      return res.status(error?.response?.status || 400).json({
+        message:
+          error?.response?.data?.message || 'Failed to fetch sent requests',
+      });
+    }
   }
 }

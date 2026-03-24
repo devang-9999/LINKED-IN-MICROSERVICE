@@ -11,7 +11,6 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* ===== COVER ===== */
 
 .cover-wrapper {
   position: relative;
@@ -33,7 +32,6 @@
   color: white !important;
 }
 
-/* ===== AVATAR ===== */
 
 .avatar-wrapper {
   display: flex;
@@ -47,7 +45,6 @@
   border: 2px solid white;
 }
 
-/* ===== BODY ===== */
 
 .card-body {
   padding: 12px;
@@ -73,17 +70,15 @@
   margin-bottom: 12px !important;
 }
 
-/* ===== FOLLOW BUTTON ===== */
 
-.follow-btn {
+.follow-btn,
+.connect-btn {
   border-radius: 24px !important;
   text-transform: none !important;
   font-weight: 600 !important;
-  color: #ffffff !important;
-  background-color: #1282f3;
-  border-color: #0a66c2 !important;
+  transition: all 0.2s ease;
 }
-
-.follow-btn:hover {
-  background: #000000 !important;
+/* Optional hover only for outlined state */
+.follow-btn.outlined:hover {
+  background: rgba(18, 130, 243, 0.08);
 }

@@ -1,6 +1,6 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @next/next/no-img-element */
 "use client";
+
+/* eslint-disable @next/next/no-img-element */
 
 import { useState, useEffect } from "react";
 import "./SuggestionCard.css";
@@ -20,10 +20,8 @@ import AddIcon from "@mui/icons-material/Add";
 import {
   followUser,
   unfollowUser,
-  getFollowStatus,
-  getFollowersCount,
   toggleConnection,
-  getConnectionStatus,
+  cancelConnectionRequest,
 } from "../../../redux/network/network.service";
 
 interface User {
@@ -33,6 +31,12 @@ interface User {
   headline?: string;
   profilePicture?: string;
   coverPicture?: string;
+
+  // ✅ FROM BACKEND
+  isFollowing?: boolean;
+  followersCount?: number;
+  connectionStatus?: "PENDING" | "ACCEPTED" | null;
+  isSender?: boolean;
 }
 
 interface SuggestionCardProps {
@@ -54,111 +58,88 @@ export default function SuggestionCard({
   const [loadingFollow, setLoadingFollow] = useState(false);
   const [loadingConnect, setLoadingConnect] = useState(false);
 
-  // =========================
-  // FOLLOW STATUS
-  // =========================
-  const checkFollowStatus = async () => {
-    try {
-      const res = await getFollowStatus(user.id);
-      setFollowed(res?.data?.isFollowing ?? false);
-    } catch (err) {
-      console.error("Follow status error:", err);
+  // ✅ INIT FROM BACKEND DATA
+  useEffect(() => {
+    if (!user?.id) return;
+
+    setFollowed(user.isFollowing ?? false);
+    setFollowersCount(user.followersCount ?? 0);
+
+    if (user.connectionStatus === "PENDING" && user.isSender) {
+      setRequested(true);
+    } else {
+      setRequested(false);
     }
-  };
+  }, [user]);
 
-  // =========================
-  // FOLLOWERS COUNT (FIXED)
-  // =========================
-  const fetchFollowersCount = async () => {
-    try {
-      const res = await getFollowersCount(user.id);
-      setFollowersCount(res?.data?.count ?? 0); // ✅ FIXED
-    } catch (err) {
-      console.error("Followers count error:", err);
-    }
-  };
+  // ================= FOLLOW =================
 
-  // =========================
-  // CONNECTION STATUS
-  // =========================
-  const checkConnectionStatus = async () => {
-    try {
-      const res = await getConnectionStatus(user.id);
-
-      if (res?.data?.status === "PENDING" && res?.data?.isSender) {
-        setRequested(true);
-      } else {
-        setRequested(false);
-      }
-    } catch (err) {
-      console.error("Connection status error:", err);
-    }
-  };
-
-  // =========================
-  // FOLLOW TOGGLE
-  // =========================
   const handleFollowToggle = async () => {
     if (loadingFollow) return;
 
-    try {
-      setLoadingFollow(true);
+    setLoadingFollow(true);
 
+    const prevFollow = followed;
+    const prevCount = followersCount;
+
+    try {
       if (followed) {
-        await unfollowUser(user.id);
         setFollowed(false);
         setFollowersCount((prev) => Math.max(prev - 1, 0));
+        await unfollowUser(user.id);
       } else {
-        await followUser(user.id);
         setFollowed(true);
         setFollowersCount((prev) => prev + 1);
+        await followUser(user.id);
       }
     } catch (err) {
-      console.error("Follow toggle error:", err);
+      console.error("Follow error:", err);
+      setFollowed(prevFollow);
+      setFollowersCount(prevCount);
     } finally {
       setLoadingFollow(false);
     }
   };
 
-  // =========================
-  // CONNECT TOGGLE
-  // =========================
+  // ================= CONNECT =================
+
   const handleConnectToggle = async () => {
     if (loadingConnect) return;
 
+    setLoadingConnect(true);
+
+    const prevRequested = requested;
+
     try {
-      setLoadingConnect(true);
-
-      const res = await toggleConnection(user.id);
-
-      if (res?.data?.message === "Connection request sent") {
-        setRequested(true);
-      }
-
-      if (res?.data?.message === "Connection request cancelled") {
+      if (requested) {
         setRequested(false);
+        await cancelConnectionRequest(user.id);
+      } else {
+        setRequested(true);
+
+        const res = await toggleConnection(user.id);
+
+        const message = res?.data?.message;
+
+        if (
+          message !== "Connection request sent" &&
+          message !== "Connection already exists"
+        ) {
+          setRequested(false);
+        }
       }
     } catch (err) {
-      console.error("Connection toggle error:", err);
+      console.error("Connection error:", err);
+      setRequested(prevRequested);
     } finally {
       setLoadingConnect(false);
     }
   };
 
-  // =========================
-  // INITIAL LOAD
-  // =========================
-  useEffect(() => {
-    if (!user?.id) return;
-
-    checkFollowStatus();
-    fetchFollowersCount();
-    checkConnectionStatus();
-  }, [user.id]);
+  // ================= UI =================
 
   return (
     <Paper elevation={0} className="suggestion-card">
-      {/* COVER */}
       <Box className="cover-wrapper">
         <img
           src={
@@ -179,7 +160,6 @@ export default function SuggestionCard({
         </IconButton>
       </Box>
 
-      {/* AVATAR */}
       <Box className="avatar-wrapper">
         <Avatar
           src={
@@ -191,7 +171,6 @@ export default function SuggestionCard({
         />
       </Box>
 
-      {/* BODY */}
       <Box className="card-body">
         <Typography className="name">
           {user.firstName} {user.lastName}
@@ -205,41 +184,51 @@ export default function SuggestionCard({
           {followersCount} followers
         </Typography>
 
-        {/* FOLLOW BUTTON */}
+        {/* FOLLOW */}
         <Button
           startIcon={!followed ? <AddIcon /> : undefined}
-          className="follow-btn"
-          variant={followed ? "contained" : "outlined"}
           fullWidth
           disabled={loadingFollow}
           onClick={handleFollowToggle}
           sx={{
-            backgroundColor: followed ? "#1282f3" : "transparent",
-            color: followed ? "#fff" : "#1282f3",
-            borderColor: "#1282f3",
-            "&:hover": {
-              backgroundColor: "#0f6cd1",
-            },
+            borderRadius: "24px",
+            textTransform: "none",
+            fontWeight: 600,
+            ...(followed
+              ? {
+                  backgroundColor: "#1282f3",
+                  color: "#fff",
+                }
+              : {
+                  color: "#1282f3",
+                  border: "1px solid #1282f3",
+                }),
           }}
         >
           {loadingFollow ? "Loading..." : followed ? "Following" : "Follow"}
         </Button>
 
-        {/* CONNECT BUTTON */}
+        {/* CONNECT */}
         <Button
-          variant={requested ? "contained" : "outlined"}
           fullWidth
           disabled={loadingConnect}
-          sx={{
-            mt: 1,
-            backgroundColor: requested ? "#0a66c2" : "transparent",
-            color: requested ? "#fff" : "#0a66c2",
-            borderColor: "#0a66c2",
-            "&:hover": {
-              backgroundColor: "#004182",
-            },
-          }}
           onClick={handleConnectToggle}
+          sx={{
+            borderRadius: "24px",
+            textTransform: "none",
+            fontWeight: 600,
+            mt: 1,
+            ...(requested
+              ? {
+                  backgroundColor: "#fff",
+                  color: "#666",
+                  border: "1px solid #ccc",
+                }
+              : {
+                  color: "#0a66c2",
+                  border: "1px solid #0a66c2",
+                }),
+          }}
         >
           {loadingConnect ? "Loading..." : requested ? "Pending" : "Connect"}
         </Button>

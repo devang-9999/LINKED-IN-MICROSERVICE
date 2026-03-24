@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Controller, Post, Delete, Get, Param, Req, Res } from '@nestjs/common';
 
@@ -14,8 +15,15 @@ export class FollowersController {
     @Req() req: any,
     @Res() res: express.Response,
   ) {
-    const response = await this.service.follow(userId, req.headers);
-    return res.status(response.status).json(response.data);
+    try {
+      const data = await this.service.follow(userId, req.headers);
+
+      return res.status(200).json(data);
+    } catch (error: any) {
+      return res.status(400).json({
+        message: error.message,
+      });
+    }
   }
 
   @Delete(':userId')

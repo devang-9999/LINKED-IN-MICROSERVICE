@@ -46,7 +46,6 @@ export class InteractionsService {
       return response;
     }
 
-    // 2. extract userIds
     const userIds = [
       ...new Set(comments.map((c: any) => c.userId).filter(Boolean)),
     ];
@@ -66,7 +65,6 @@ export class InteractionsService {
       users = usersRes.data || [];
     }
 
-    // 4. map users
     const userMap = new Map(users.map((u: any) => [u.id, u]));
 
     const enrichedComments = comments.map((c: any) => ({

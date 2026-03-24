@@ -1,5 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
+
+/* eslint-disable @next/next/no-img-element */
 
 import "./LeftSideBar.css";
 import { useEffect, useState } from "react";
@@ -13,31 +14,28 @@ import {
 } from "@mui/material";
 
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { getNetworkOverview } from "@/redux/network/network.service";
 
-import {
-  getMyConnectionsCount,
-  getMyFollowingCount,
-  getSentRequestsCount,
-} from "../../../redux/network/network.service";
 
 const NetworkLeftSidebar = () => {
-  const [connections, setConnections] = useState(0);
-  const [following, setFollowing] = useState(0);
-  const [invitesSent, setInvitesSent] = useState(0);
+  const [stats, setStats] = useState({
+    connections: 0,
+    following: 0,
+    invitesSent: 0,
+  });
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [connRes, followRes, inviteRes] = await Promise.all([
-          getMyConnectionsCount(),
-          getMyFollowingCount(),
-          getSentRequestsCount(),
-        ]);
+        const res = await getNetworkOverview();
 
-        setConnections(connRes?.data?.count || 0);
-        setFollowing(followRes?.data?.count || 0);
-        setInvitesSent(inviteRes?.data?.count || 0);
+        setStats({
+          connections: res?.data?.connections || 0,
+          following: res?.data?.following || 0,
+          invitesSent: res?.data?.invitesSent || 0,
+        });
       } catch (err) {
         console.error("Sidebar stats error:", err);
       } finally {
@@ -62,15 +60,15 @@ const NetworkLeftSidebar = () => {
         >
           {[
             {
-              value: invitesSent,
+              value: stats.invitesSent,
               label: "Invites sent",
             },
             {
-              value: connections,
+              value: stats.connections,
               label: "Connections",
             },
             {
-              value: following,
+              value: stats.following,
               label: "Following",
             },
           ].map((stat, i) => (
