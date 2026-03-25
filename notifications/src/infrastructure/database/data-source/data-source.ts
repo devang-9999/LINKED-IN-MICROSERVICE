@@ -1,6 +1,7 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
 import * as dotenv from 'dotenv';
 import { Notification } from '../../../domain/notification.entity';
+import { InboxEvent } from '../../rabbitmq/inbox/inbox.entity';
 
 dotenv.config({
   path:
@@ -19,7 +20,7 @@ export const dataSourceOptions: DataSourceOptions = {
   synchronize: false,
   logging: false,
 
-  entities: [Notification],
+  entities: [Notification, InboxEvent],
 
   migrations:
     process.env.NODE_ENV === 'production'

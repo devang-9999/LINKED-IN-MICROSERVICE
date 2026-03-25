@@ -183,11 +183,8 @@ export class ProfileService {
         .filter((user) => {
           const connection = connectionMap.get(user.id);
 
-          // ❌ remove if already connected
+          // ✅ ONLY remove accepted connections
           if (connection?.status === 'ACCEPTED') return false;
-
-          // ❌ remove if already following
-          if (followedIds.includes(user.id)) return false;
 
           return true;
         })

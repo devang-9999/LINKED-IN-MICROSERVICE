@@ -23,7 +23,8 @@
     "migration:create": "typeorm-ts-node-commonjs migration:create src/infrastructure/database/migrations/migration",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/infrastructure/database/data-source/data-source.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/infrastructure/database/data-source/data-source.ts",
-     "consumer": "ts-node -r tsconfig-paths/register src/cli/consume.ts"
+    "consume": "ts-node -r tsconfig-paths/register src/cli/consume.ts",
+    "process": "ts-node -r tsconfig-paths/register src/cli/processor.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
