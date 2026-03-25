@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import {
   Injectable,
   NotFoundException,
@@ -28,6 +31,7 @@ export class ConnectionsService {
     private outboxRepository: Repository<OutboxEvent>,
   ) {}
 
+  // 🔥 SEND CONNECTION REQUEST
   async sendRequest(currentUserId: string, targetUserId: string) {
     if (currentUserId === targetUserId) {
       throw new BadRequestException('Cannot connect with yourself');
@@ -64,19 +68,23 @@ export class ConnectionsService {
 
     await this.connectionRepository.save(connection);
 
+    // ✅ ENRICHED OUTBOX EVENT
     await this.outboxRepository.save({
       aggregateType: 'connection',
       aggregateId: connection.id,
       eventType: 'connection.requested',
       payload: {
-        senderId: currentUserId,
-        receiverId: targetUserId,
+        senderId: sender.id,
+        receiverId: receiver.id,
+        senderName: `${sender.firstName} ${sender.lastName}`,
+        senderAvatar: sender.profilePicture,
       },
     });
 
     return { message: 'Connection request sent' };
   }
 
+  // 🔥 ACCEPT REQUEST
   async acceptRequest(connectionId: string) {
     const connection = await this.connectionRepository.findOne({
       where: { id: connectionId },
@@ -91,6 +99,7 @@ export class ConnectionsService {
 
     await this.connectionRepository.save(connection);
 
+    // ✅ ENRICHED EVENT
     await this.outboxRepository.save({
       aggregateType: 'connection',
       aggregateId: connection.id,
@@ -98,12 +107,17 @@ export class ConnectionsService {
       payload: {
         senderId: connection.sender.id,
         receiverId: connection.receiver.id,
+
+        // 🔥 IMPORTANT: accepter is sender of notification
+        senderName: `${connection.receiver.firstName} ${connection.receiver.lastName}`,
+        senderAvatar: connection.receiver.profilePicture,
       },
     });
 
     return { message: 'Connection accepted' };
   }
 
+  // 🔥 REJECT REQUEST
   async rejectRequest(connectionId: string) {
     const connection = await this.connectionRepository.findOne({
       where: { id: connectionId },
@@ -125,12 +139,14 @@ export class ConnectionsService {
       payload: {
         senderId: connection.sender.id,
         receiverId: connection.receiver.id,
+        senderName: `${connection.receiver.firstName} ${connection.receiver.lastName}`,
       },
     });
 
     return { message: 'Connection rejected' };
   }
 
+  // 🔥 CANCEL REQUEST
   async cancelRequest(currentUserId: string, targetUserId: string) {
     const connection = await this.connectionRepository.findOne({
       where: {
@@ -149,12 +165,14 @@ export class ConnectionsService {
     return { message: 'Connection request cancelled' };
   }
 
+  // 🔥 GET CONNECTION STATUS
   async getConnectionStatus(currentUserId: string, targetUserId: string) {
     const connection = await this.connectionRepository.findOne({
       where: [
         { sender: { id: currentUserId }, receiver: { id: targetUserId } },
         { sender: { id: targetUserId }, receiver: { id: currentUserId } },
       ],
+      relations: ['sender'],
     });
 
     if (!connection) {
@@ -167,6 +185,7 @@ export class ConnectionsService {
     };
   }
 
+  // 🔥 RECEIVED REQUESTS
   async getReceivedRequests(currentUserId: string) {
     const requests = await this.connectionRepository.find({
       where: {
@@ -174,9 +193,7 @@ export class ConnectionsService {
         status: ConnectionStatus.PENDING,
       },
       relations: ['sender'],
-      order: {
-        createdAt: 'DESC',
-      },
+      order: { createdAt: 'DESC' },
     });
 
     return requests.map((req) => ({
@@ -194,6 +211,7 @@ export class ConnectionsService {
     }));
   }
 
+  // 🔥 SENT REQUESTS
   async getSentRequests(currentUserId: string) {
     const requests = await this.connectionRepository.find({
       where: {
@@ -201,9 +219,7 @@ export class ConnectionsService {
         status: ConnectionStatus.PENDING,
       },
       relations: ['receiver'],
-      order: {
-        createdAt: 'DESC',
-      },
+      order: { createdAt: 'DESC' },
     });
 
     return requests.map((req) => ({

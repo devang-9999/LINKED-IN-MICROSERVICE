@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { NotificationGateway } from './notification.gateway';
 import { Notification, NotificationType } from 'src/domain/notification.entity';
 
@@ -13,6 +14,7 @@ export class NotificationService {
     private notificationGateway: NotificationGateway,
   ) {}
 
+  // 🔥 CREATE NOTIFICATION (called by connections service)
   async createNotification(
     senderId: string,
     receiverId: string,
@@ -20,7 +22,10 @@ export class NotificationService {
     type: NotificationType,
     senderName?: string,
     senderAvatar?: string,
-  ): Promise<Notification> {
+  ): Promise<Notification | null> {
+    // ✅ prevent self-notifications
+    if (senderId === receiverId) return null;
+
     const notification = this.notificationRepo.create({
       senderId,
       receiverId,
@@ -33,10 +38,10 @@ export class NotificationService {
 
     const savedNotification = await this.notificationRepo.save(notification);
 
-    // 🔥 send realtime notification
+    // 🔥 REAL-TIME EMIT
     this.notificationGateway.sendNotification(receiverId, savedNotification);
 
-    // 🔥 update unread count
+    // 🔥 UPDATE COUNT
     const unreadCount = await this.getUnreadCount(receiverId);
 
     this.notificationGateway.sendUnreadCount(receiverId, unreadCount);
@@ -44,16 +49,15 @@ export class NotificationService {
     return savedNotification;
   }
 
+  // 🔥 GET ALL NOTIFICATIONS
   async getNotifications(userId: string): Promise<Notification[]> {
     return await this.notificationRepo.find({
-      where: {
-        receiverId: userId,
-      },
+      where: { receiverId: userId },
       order: { createdAt: 'DESC' },
     });
   }
 
-  // GET UNREAD COUNT
+  // 🔥 GET UNREAD COUNT
   async getUnreadCount(userId: string): Promise<number> {
     return await this.notificationRepo.count({
       where: {
@@ -63,17 +67,23 @@ export class NotificationService {
     });
   }
 
-  async markAsRead(notificationId: string) {
+  // 🔥 MARK SINGLE AS READ
+  async markAsRead(notificationId: string): Promise<Notification> {
     const notification = await this.notificationRepo.findOne({
       where: { id: notificationId },
     });
 
-    if (!notification) return null;
+    if (!notification) {
+      throw new NotFoundException('Notification not found');
+    }
+
+    // already read
+    if (notification.isRead) return notification;
 
     notification.isRead = true;
+    const updated = await this.notificationRepo.save(notification);
 
-    await this.notificationRepo.save(notification);
-
+    // 🔥 update count
     const unreadCount = await this.getUnreadCount(notification.receiverId);
 
     this.notificationGateway.sendUnreadCount(
@@ -81,9 +91,10 @@ export class NotificationService {
       unreadCount,
     );
 
-    return notification;
+    return updated;
   }
 
+  // 🔥 MARK ALL AS READ
   async markAllAsRead(userId: string) {
     await this.notificationRepo.update(
       {
@@ -95,10 +106,33 @@ export class NotificationService {
       },
     );
 
+    // 🔥 instantly update UI
     this.notificationGateway.sendUnreadCount(userId, 0);
 
     return {
       message: 'All notifications marked as read',
     };
+  }
+
+  // 🔥 OPTIONAL (ADVANCED) — DELETE NOTIFICATION
+  async deleteNotification(notificationId: string) {
+    const notification = await this.notificationRepo.findOne({
+      where: { id: notificationId },
+    });
+
+    if (!notification) {
+      throw new NotFoundException('Notification not found');
+    }
+
+    await this.notificationRepo.remove(notification);
+
+    const unreadCount = await this.getUnreadCount(notification.receiverId);
+
+    this.notificationGateway.sendUnreadCount(
+      notification.receiverId,
+      unreadCount,
+    );
+
+    return { message: 'Notification deleted' };
   }
 }

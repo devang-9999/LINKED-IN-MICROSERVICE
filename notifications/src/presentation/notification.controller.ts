@@ -1,7 +1,18 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { Controller, Get, Req, UseGuards, Patch, Param } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+import {
+  Controller,
+  Get,
+  Req,
+  UseGuards,
+  Patch,
+  Param,
+  UnauthorizedException,
+  Post,
+  Body,
+} from '@nestjs/common';
 
 import { NotificationService } from 'src/application/notification.service';
 import { JwtAuthGuard } from 'src/infrastructure/security/jwt-auth.gaurd';
@@ -10,27 +21,55 @@ import { JwtAuthGuard } from 'src/infrastructure/security/jwt-auth.gaurd';
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
+  private getUserId(req: any): string {
+    if (!req.user || !req.user.userId) {
+      throw new UnauthorizedException('User not authenticated');
+    }
+    return req.user.userId;
+  }
+
+  @Post()
+  async createNotification(@Body() body: any) {
+    const { senderId, receiverId, message, type, senderName, senderAvatar } =
+      body;
+
+    return this.notificationService.createNotification(
+      senderId,
+      receiverId,
+      message,
+      type,
+      senderName,
+      senderAvatar,
+    );
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get()
   async getNotifications(@Req() req: any) {
-    return this.notificationService.getNotifications(req.user.userId);
+    const userId = this.getUserId(req);
+    return this.notificationService.getNotifications(userId);
   }
 
+  // ✅ GET COUNT
   @UseGuards(JwtAuthGuard)
   @Get('unread-count')
   async getUnreadCount(@Req() req: any) {
-    return this.notificationService.getUnreadCount(req.user.userId);
+    const userId = this.getUserId(req);
+    return this.notificationService.getUnreadCount(userId);
   }
 
+  // ✅ MARK ONE
   @UseGuards(JwtAuthGuard)
   @Patch(':id/read')
   async markAsRead(@Param('id') id: string) {
     return this.notificationService.markAsRead(id);
   }
 
+  // ✅ MARK ALL
   @UseGuards(JwtAuthGuard)
   @Patch('read-all')
   async markAllAsRead(@Req() req: any) {
-    return this.notificationService.markAllAsRead(req.user.userId);
+    const userId = this.getUserId(req);
+    return this.notificationService.markAllAsRead(userId);
   }
 }

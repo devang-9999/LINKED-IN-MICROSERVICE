@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import "./notifications.css";
@@ -12,11 +12,10 @@ import {
 } from "@mui/material";
 
 import { useState, useEffect } from "react";
-import { getSocket } from "@/utils/socket";
+import { connectSocket, getSocket } from "@/utils/socket";
 
 import Navbar from "../../../components/Navbar/Navbar";
 import LeftSidebar from "../../../components/Feed/LeftSideBar/LeftSideBar";
-import API from "@/utils/axios";
 
 interface Notification {
   id: string;
@@ -31,36 +30,46 @@ export default function Notifications() {
   const [filter, setFilter] = useState("all");
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const backendUrl = `${process.env.NEXT_PUBLIC_NOTIFICATION_URL}/uploads/`;
+  const BASE_URL = process.env.NEXT_PUBLIC_NOTIFICATIONS_URL;
+  const backendUrl = `${BASE_URL}/uploads/`;
 
   const handleChange = (
     event: React.MouseEvent<HTMLElement>,
-    newFilter: string
+    newFilter: string,
   ) => {
     if (newFilter !== null) setFilter(newFilter);
   };
 
+  // ✅ FETCH NOTIFICATIONS (DIRECT CALL)
   const fetchNotifications = async () => {
     try {
-      const res = await API.get("/notifications");
-      setNotifications(res.data);
+      const res = await fetch(`${BASE_URL}/notifications`, {
+        method: "GET",
+        credentials: "include", // 🔥 VERY IMPORTANT (cookies)
+      });
+
+      const data = await res.json();
+      setNotifications(data);
     } catch (error) {
       console.error("Failed to fetch notifications", error);
     }
   };
 
-  // ✅ MARK AS READ (only if unread)
+  // ✅ MARK AS READ
   const markAsRead = async (notification: Notification) => {
     if (notification.isRead) return;
 
     try {
-      await API.patch(`/notifications/${notification.id}/read`);
+      await fetch(`${BASE_URL}/notifications/${notification.id}/read`, {
+        method: "PATCH",
+        credentials: "include", // 🔥 IMPORTANT
+      });
 
-      // 🔥 Optimistic UI update
+      // Optimistic update
       setNotifications((prev) =>
         prev.map((n) =>
-          n.id === notification.id ? { ...n, isRead: true } : n
-        )
+          n.id === notification.id ? { ...n, isRead: true } : n,
+        ),
       );
     } catch (error) {
       console.error("Failed to mark as read", error);
@@ -70,17 +79,12 @@ export default function Notifications() {
   useEffect(() => {
     fetchNotifications();
 
-    const socket = getSocket();
+    const socket = getSocket() || connectSocket();
 
-    // ✅ SAFETY CHECK
-    if (!socket) return;
-
-    // 🔥 NEW NOTIFICATION
     socket.on("notification", (data: Notification) => {
       setNotifications((prev) => [data, ...prev]);
     });
 
-    // 🔥 REFRESH ON COUNT UPDATE
     socket.on("notification-count", () => {
       fetchNotifications();
     });
@@ -99,14 +103,8 @@ export default function Notifications() {
         <LeftSidebar />
 
         <Box className="notification-main">
-
-          {/* FILTER */}
           <Paper className="notification-filter">
-            <ToggleButtonGroup
-              value={filter}
-              exclusive
-              onChange={handleChange}
-            >
+            <ToggleButtonGroup value={filter} exclusive onChange={handleChange}>
               <ToggleButton value="all">All</ToggleButton>
               <ToggleButton value="jobs">Jobs</ToggleButton>
               <ToggleButton value="posts">My posts</ToggleButton>

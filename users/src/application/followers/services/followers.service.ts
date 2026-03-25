@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import {
   Injectable,
   NotFoundException,
@@ -64,8 +67,10 @@ export class FollowersService {
       aggregateId: follow.id,
       eventType: 'user.followed',
       payload: {
-        followerId: currentUserId,
-        followingId: targetUserId,
+        senderId: currentUser.id,
+        receiverId: targetUser.id,
+        senderName: `${currentUser.firstName} ${currentUser.lastName}`,
+        senderAvatar: currentUser.profilePicture,
       },
     });
 
@@ -93,8 +98,8 @@ export class FollowersService {
       aggregateId: followId,
       eventType: 'user.unfollowed',
       payload: {
-        followerId: currentUserId,
-        followingId: targetUserId,
+        senderId: currentUserId,
+        receiverId: targetUserId,
       },
     });
 
@@ -107,7 +112,13 @@ export class FollowersService {
       relations: ['follower'],
     });
 
-    return followers.map((f) => f.follower);
+    return followers.map((f) => ({
+      id: f.follower.id,
+      firstName: f.follower.firstName,
+      lastName: f.follower.lastName,
+      headline: f.follower.headline,
+      profilePicture: f.follower.profilePicture,
+    }));
   }
 
   async getFollowing(userId: string) {
@@ -116,7 +127,13 @@ export class FollowersService {
       relations: ['following'],
     });
 
-    return following.map((f) => f.following);
+    return following.map((f) => ({
+      id: f.following.id,
+      firstName: f.following.firstName,
+      lastName: f.following.lastName,
+      headline: f.following.headline,
+      profilePicture: f.following.profilePicture,
+    }));
   }
 
   async getFollowingCount(userId: string) {
@@ -126,6 +143,7 @@ export class FollowersService {
 
     return { count };
   }
+
   async getFollowersCount(userId: string) {
     const count = await this.followRepository.count({
       where: { following: { id: userId } },

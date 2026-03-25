@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import {
   Controller,
   Post,
@@ -8,7 +9,9 @@ import {
   UseGuards,
   Delete,
   Get,
+  UnauthorizedException,
 } from '@nestjs/common';
+
 import { ConnectionsService } from 'src/application/connections/services/connection.service';
 import { JwtAuthGuard } from 'src/infrastructure/security/jwt-auth.gaurd';
 
@@ -16,10 +19,18 @@ import { JwtAuthGuard } from 'src/infrastructure/security/jwt-auth.gaurd';
 export class ConnectionsController {
   constructor(private readonly connectionsService: ConnectionsService) {}
 
+  private getUserId(req: any): string {
+    if (!req.user || !req.user.userId) {
+      throw new UnauthorizedException('User not authenticated');
+    }
+    return req.user.userId;
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post('request/:userId')
   sendRequest(@Req() req: any, @Param('userId') userId: string) {
-    return this.connectionsService.sendRequest(req.user.userId, userId);
+    const currentUserId = this.getUserId(req);
+    return this.connectionsService.sendRequest(currentUserId, userId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -34,25 +45,31 @@ export class ConnectionsController {
     return this.connectionsService.rejectRequest(connectionId);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('request/:userId')
-  @UseGuards(JwtAuthGuard)
   cancelRequest(@Req() req: any, @Param('userId') userId: string) {
-    return this.connectionsService.cancelRequest(req.user.userId, userId);
-  }
-  @Get('requests')
-  @UseGuards(JwtAuthGuard)
-  getReceived(@Req() req: any) {
-    return this.connectionsService.getReceivedRequests(req.user.userId);
+    const currentUserId = this.getUserId(req);
+    return this.connectionsService.cancelRequest(currentUserId, userId);
   }
 
-  @Get('sent')
   @UseGuards(JwtAuthGuard)
-  getSent(@Req() req: any) {
-    return this.connectionsService.getSentRequests(req.user.userId);
+  @Get('requests')
+  getReceived(@Req() req: any) {
+    const currentUserId = this.getUserId(req);
+    return this.connectionsService.getReceivedRequests(currentUserId);
   }
-  @Get('status/:userId')
+
   @UseGuards(JwtAuthGuard)
+  @Get('sent')
+  getSent(@Req() req: any) {
+    const currentUserId = this.getUserId(req);
+    return this.connectionsService.getSentRequests(currentUserId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('status/:userId')
   getStatus(@Req() req: any, @Param('userId') userId: string) {
-    return this.connectionsService.getConnectionStatus(req.user.userId, userId);
+    const currentUserId = this.getUserId(req);
+    return this.connectionsService.getConnectionStatus(currentUserId, userId);
   }
 }

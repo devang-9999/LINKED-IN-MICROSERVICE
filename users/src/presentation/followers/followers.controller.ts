@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import {
   Controller,
   Post,
@@ -8,6 +9,7 @@ import {
   Param,
   Req,
   UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
 
 import { FollowersService } from 'src/application/followers/services/followers.service';
@@ -18,29 +20,35 @@ import { JwtAuthGuard } from 'src/infrastructure/security/jwt-auth.gaurd';
 export class FollowersController {
   constructor(private readonly followersService: FollowersService) {}
 
+  private getUserId(req: any): string {
+    if (!req.user || !req.user.userId) {
+      throw new UnauthorizedException('User not authenticated');
+    }
+    return req.user.userId;
+  }
+
   @Post(':userId')
   follow(@Req() req: any, @Param('userId') userId: string) {
-    return this.followersService.followUser(req.user.userId, userId);
+    const currentUserId = this.getUserId(req);
+    return this.followersService.followUser(currentUserId, userId);
   }
 
   @Delete(':userId')
   unfollow(@Req() req: any, @Param('userId') userId: string) {
-    return this.followersService.unfollowUser(req.user.userId, userId);
+    const currentUserId = this.getUserId(req);
+    return this.followersService.unfollowUser(currentUserId, userId);
   }
 
-  @Get(':userId')
-  getFollowers(@Param('userId') userId: string) {
-    return this.followersService.getFollowers(userId);
+  @Get('status/:userId')
+  getFollowStatus(@Req() req: any, @Param('userId') userId: string) {
+    const currentUserId = this.getUserId(req);
+    return this.followersService.getFollowStatus(currentUserId, userId);
   }
 
   @Get('following/count')
   getFollowingCount(@Req() req: any) {
-    return this.followersService.getFollowingCount(req.user.userId);
-  }
-
-  @Get('following/:userId')
-  getFollowing(@Param('userId') userId: string) {
-    return this.followersService.getFollowing(userId);
+    const currentUserId = this.getUserId(req);
+    return this.followersService.getFollowingCount(currentUserId);
   }
 
   @Get(':userId/count')
@@ -48,8 +56,13 @@ export class FollowersController {
     return this.followersService.getFollowersCount(userId);
   }
 
-  @Get('status/:userId')
-  getFollowStatus(@Req() req: any, @Param('userId') userId: string) {
-    return this.followersService.getFollowStatus(req.user.userId, userId);
+  @Get('following/:userId')
+  getFollowing(@Param('userId') userId: string) {
+    return this.followersService.getFollowing(userId);
+  }
+
+  @Get(':userId')
+  getFollowers(@Param('userId') userId: string) {
+    return this.followersService.getFollowers(userId);
   }
 }
