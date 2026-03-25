@@ -1,15 +1,17 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
 import { ValidationPipe } from '@nestjs/common';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 import * as dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 dotenv.config();
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.setGlobalPrefix('api');
 
@@ -21,12 +23,18 @@ async function bootstrap() {
     }),
   );
 
+  app.use(cookieParser());
+
   app.enableCors({
-    origin: '*',
+    origin: 'http://localhost:3000',
     credentials: true,
   });
 
-  const PORT = 3004;
+  app.useWebSocketAdapter(new IoAdapter(app));
+
+  app.set('trust proxy', 1);
+
+  const PORT = process.env.PORT || 3004;
 
   await app.listen(PORT);
 

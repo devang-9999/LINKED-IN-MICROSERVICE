@@ -1,8 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -23,10 +18,14 @@ export class NotificationService {
     receiverId: string,
     message: string,
     type: NotificationType,
+    senderName?: string,
+    senderAvatar?: string,
   ): Promise<Notification> {
     const notification = this.notificationRepo.create({
       senderId,
       receiverId,
+      senderName,
+      senderAvatar,
       message,
       type,
       isRead: false,

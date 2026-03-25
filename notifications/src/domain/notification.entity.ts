@@ -41,4 +41,10 @@ export class Notification {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column({ nullable: true })
+  senderName: string;
+
+  @Column({ nullable: true })
+  senderAvatar: string;
 }

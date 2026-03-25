@@ -15,7 +15,7 @@ import { JwtService } from '@nestjs/jwt';
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: 'http://localhost:3000',
   },
 })
 export class NotificationGateway
@@ -26,33 +26,34 @@ export class NotificationGateway
 
   constructor(private readonly jwtService: JwtService) {}
 
-  // store active users (optional but useful)
   private userSocketMap = new Map<string, string[]>();
 
-  // USER CONNECTED
   async handleConnection(client: Socket) {
     try {
-      const token = await client.handshake.auth?.token;
+      const cookie = client.handshake.headers.cookie;
+
+      if (!cookie) {
+        client.disconnect();
+        return;
+      }
+
+      const token = cookie
+        .split(';')
+        .find((c) => c.trim().startsWith('accessToken='))
+        ?.split('=')[1];
 
       if (!token) {
         client.disconnect();
         return;
       }
 
-      // 🔐 verify JWT
       const payload = this.jwtService.verify(token);
       const userId = payload.userId;
 
-      // join user room
-      client.join(userId);
-
-      // store socket
-      const existingSockets = this.userSocketMap.get(userId) || [];
-      existingSockets.push(client.id);
-      this.userSocketMap.set(userId, existingSockets);
+      await client.join(userId);
 
       console.log(`✅ User ${userId} connected`);
-    } catch (err) {
+    } catch {
       client.disconnect();
     }
   }
