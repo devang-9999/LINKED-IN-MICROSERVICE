@@ -4,7 +4,7 @@ let socket: Socket | null = null;
 
 export const connectSocket = () => {
   if (!socket) {
-    socket = io(process.env.NEXT_PUBLIC_NOTIFICATION_URL!, {
+    socket = io(process.env.NEXT_PUBLIC_NOTIFICATIONS_URL!, {
       withCredentials: true,
       transports: ["websocket"],
     });

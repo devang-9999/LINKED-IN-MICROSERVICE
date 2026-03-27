@@ -17,20 +17,8 @@ export class InteractionsService {
     });
   }
 
-  // async getComments(postId: string, page: number, limit: number, headers: any) {
-  //   return axios.get(
-  //     `${this.baseUrl}/comments/${postId}?page=${page}&limit=${limit}`,
-  //     {
-  //       headers,
-  //       withCredentials: true,
-  //     },
-  //   );
-  // }
-
   async getComments(postId: string, page: number, limit: number, headers: any) {
     const cookie = headers.cookie;
-
-    // 1. get comments
     const response = await axios.get(
       `${this.baseUrl}/comments/${postId}?page=${page}&limit=${limit}`,
       {
@@ -51,8 +39,6 @@ export class InteractionsService {
     ];
 
     let users: any[] = [];
-
-    // 3. fetch users
     if (userIds.length > 0) {
       const usersRes = await axios.get(
         `http://users-service:3002/profile/bulk`,

@@ -24,7 +24,8 @@ import dataSource from './infrastructure/database/data-source/data-source';
 import { ConnectionsService } from './application/connections/services/connection.service';
 import { JwtModule } from './infrastructure/security/jwt.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { OutboxRunner } from './infrastructure/outbox/outbox.runner';
+import { InboxProcessorDispatcher } from './cli/process';
+import { OutboxRunner } from './cli/dispatch';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { OutboxRunner } from './infrastructure/outbox/outbox.runner';
     FollowersService,
     ConnectionsService,
     OutboxRunner,
+    InboxProcessorDispatcher,
   ],
 })
 export class AppModule {}

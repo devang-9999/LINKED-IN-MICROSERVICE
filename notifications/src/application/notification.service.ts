@@ -10,7 +10,6 @@ export class NotificationService {
   constructor(
     @InjectRepository(Notification)
     private notificationRepo: Repository<Notification>,
-
     private notificationGateway: NotificationGateway,
   ) {}
 

@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
+import { OutboxWorker } from 'src/infrastructure/rabbitmq/outbox/outbox.worker';
 import { DataSource } from 'typeorm';
-import { OutboxWorker } from './outbox.worker';
 
 @Injectable()
 export class OutboxRunner implements OnModuleInit {
@@ -16,22 +15,18 @@ export class OutboxRunner implements OnModuleInit {
   }
 
   onModuleInit() {
-    console.log('🚀 Outbox Runner Initialized');
+    console.log('🚀 Outbox Runner Initialized (Post Service)');
   }
 
-  @Cron('*/1 * * * * *')
+  @Cron('*/5 * * * * *')
   async handleCron() {
-    if (this.isRunning) {
-      console.log('⚠️ Outbox already running...');
-      return;
-    }
+    if (this.isRunning) return;
 
     this.isRunning = true;
 
     try {
       if (!this.dataSource.isInitialized) {
         await this.dataSource.initialize();
-        console.log('✅ DB connected (outbox)');
       }
 
       await this.worker.run();

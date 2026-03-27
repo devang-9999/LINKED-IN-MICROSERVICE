@@ -68,6 +68,7 @@ services:
     command: npm run start:dev
     depends_on:
       - postgres
+      - rabbitmq
     networks:
       - linkedin-network
 
@@ -84,6 +85,7 @@ services:
     command: npm run start:dev
     depends_on:
       - postgres
+      - rabbitmq
     networks:
       - linkedin-network
 

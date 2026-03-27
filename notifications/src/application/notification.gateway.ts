@@ -31,7 +31,7 @@ export class NotificationGateway
       console.log('🔌 Incoming socket...');
 
       const cookie = client.handshake.headers.cookie;
-
+      console.log('🍪 Cookie:', client.handshake.headers.cookie);
       if (!cookie) {
         console.log('❌ No cookie found');
         client.disconnect();

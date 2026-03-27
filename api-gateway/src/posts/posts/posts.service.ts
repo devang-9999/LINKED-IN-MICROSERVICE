@@ -10,15 +10,6 @@ import axios from 'axios';
 export class PostsService {
   private baseUrl = process.env.POSTS_SERVICE_URL;
 
-  // async getAllPosts(headers: any) {
-  //   const response = await axios.get(`${this.baseUrl}/posts`, {
-  //     headers,
-  //     withCredentials: true,
-  //   });
-
-  //   return response;
-  // }
-
   async getPost(id: string, headers: any) {
     const response = await axios.get(`${this.baseUrl}/posts/${id}`, {
       headers,
@@ -94,38 +85,4 @@ export class PostsService {
       throw new Error('Failed to fetch posts');
     }
   }
-  // async getAllPosts(headers: any) {
-  //   const postsResponse = await axios.get(`${this.baseUrl}/posts`, {
-  //     headers,
-  //     withCredentials: true,
-  //   });
-
-  //   const posts = postsResponse.data.posts;
-
-  //   const userIds = [...new Set(posts.map((p: any) => p.userId))];
-
-  //   const usersResponse = await axios.get(
-  //     `${process.env.USERS_SERVICE_URL}/users/bulk?ids=${userIds.join(',')}`,
-  //     {
-  //       headers,
-  //       withCredentials: true,
-  //     },
-  //   );
-
-  //   const users = usersResponse.data;
-
-  //   const userMap = new Map(users.map((u: any) => [u.id, u]));
-
-  //   const enrichedPosts = posts.map((post: any) => ({
-  //     ...post,
-  //     user: userMap.get(post.userId) || null,
-  //   }));
-
-  //   return {
-  //     posts: enrichedPosts,
-  //     total: postsResponse.data.total,
-  //     page: postsResponse.data.page,
-  //     limit: postsResponse.data.limit,
-  //   };
-  // }
 }

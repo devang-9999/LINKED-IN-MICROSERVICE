@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -11,6 +10,8 @@ export enum NotificationType {
   FOLLOW = 'FOLLOW',
   CONNECTION_REQUEST = 'CONNECTION_REQUEST',
   CONNECTION_ACCEPTED = 'CONNECTION_ACCEPTED',
+  POST_LIKE = 'POST_LIKE',
+  POST_COMMENT = 'POST_COMMENT',
 }
 
 @Entity('notifications')

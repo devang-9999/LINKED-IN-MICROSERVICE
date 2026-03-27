@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
-
 import { OutboxEvent } from './outbox.entity';
 import { createRabbitMQConnection } from '../rabbitmq/rabbbitmq.connection';
 
 @Injectable()
 export class OutboxWorker {
+  private readonly logger = new Logger(OutboxWorker.name);
+
   constructor(
     @InjectDataSource()
     private dataSource: DataSource,
@@ -26,6 +26,11 @@ export class OutboxWorker {
       order: { createdAt: 'ASC' },
     });
 
+    if (!events.length) {
+      this.logger.log('No events to process');
+      return;
+    }
+
     for (const event of events) {
       try {
         channel.publish(
@@ -38,9 +43,9 @@ export class OutboxWorker {
         event.processed = true;
         await repo.save(event);
 
-        console.log('Dispatched:', event.eventType);
+        this.logger.log(`Dispatched: ${event.eventType}`);
       } catch (err) {
-        console.error('Failed:', event.eventType);
+        this.logger.error(`Failed: ${event.eventType}`, err);
       }
     }
   }

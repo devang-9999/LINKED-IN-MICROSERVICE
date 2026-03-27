@@ -20,13 +20,22 @@ import { CommentController } from './presentation/comment/comment.controller';
 import { CommentLikeController } from './presentation/comment-like/comment-like.controller';
 import { CommentService } from './application/comments/commet.service';
 import { dataSourceOptions } from './infrastructure/database/data-source/data-source';
+import { OutboxRunner } from './cli/outbox.runner';
+import { OutboxEvent } from './infrastructure/rabbitmq/outbox/outbox.entity';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(dataSourceOptions),
-
-    TypeOrmModule.forFeature([Post, Repost, PostLike, Comment, CommentLike]),
-
+    ScheduleModule.forRoot(),
+    TypeOrmModule.forFeature([
+      Post,
+      Repost,
+      PostLike,
+      Comment,
+      CommentLike,
+      OutboxEvent,
+    ]),
     JwtModule,
   ],
 
@@ -44,6 +53,7 @@ import { dataSourceOptions } from './infrastructure/database/data-source/data-so
     LikeService,
     CommentService,
     CommentLikeService,
+    OutboxRunner,
   ],
 })
 export class AppModule {}

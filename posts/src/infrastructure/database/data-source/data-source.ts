@@ -6,6 +6,7 @@ import { Repost } from 'src/domain/repost/entities/repost.entity';
 import { PostLike } from 'src/domain/like/entities/post-like.entity';
 import { Comment } from 'src/domain/comment/entities/comment.entity';
 import { CommentLike } from 'src/domain/comment-like/entities/comment-like.entity';
+import { OutboxEvent } from 'src/infrastructure/rabbitmq/outbox/outbox.entity';
 
 dotenv.config({
   path:
@@ -19,11 +20,10 @@ export const dataSourceOptions: DataSourceOptions = {
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-
   synchronize: false,
   logging: false,
 
-  entities: [Post, Repost, PostLike, Comment, CommentLike],
+  entities: [Post, Repost, PostLike, Comment, CommentLike, OutboxEvent],
 
   migrations:
     process.env.NODE_ENV === 'production'

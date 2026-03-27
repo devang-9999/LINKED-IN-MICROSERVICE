@@ -50,7 +50,6 @@ export class NotificationController {
     return this.notificationService.getNotifications(userId);
   }
 
-  // ✅ GET COUNT
   @UseGuards(JwtAuthGuard)
   @Get('unread-count')
   async getUnreadCount(@Req() req: any) {
@@ -58,14 +57,12 @@ export class NotificationController {
     return this.notificationService.getUnreadCount(userId);
   }
 
-  // ✅ MARK ONE
   @UseGuards(JwtAuthGuard)
   @Patch(':id/read')
   async markAsRead(@Param('id') id: string) {
     return this.notificationService.markAsRead(id);
   }
 
-  // ✅ MARK ALL
   @UseGuards(JwtAuthGuard)
   @Patch('read-all')
   async markAllAsRead(@Req() req: any) {

@@ -2,7 +2,6 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import * as dotenv from 'dotenv';
 import { OutboxEvent } from '../../outbox/outbox.entity';
 import { InboxEvent } from '../../inbox/inbox.entity';
-// import { join } from 'path';
 
 dotenv.config({
   path:

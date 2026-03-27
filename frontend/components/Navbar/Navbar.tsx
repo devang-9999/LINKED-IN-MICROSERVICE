@@ -31,7 +31,6 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 import axios from "axios";
 
-// ✅ FIXED SOCKET IMPORT
 import { connectSocket, getSocket } from "@/utils/socket";
 
 interface UserProfile {

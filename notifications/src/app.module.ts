@@ -10,7 +10,6 @@ import { NotificationGateway } from './application/notification.gateway';
 import { JwtStrategy } from './infrastructure/security/jwt.strategy';
 import { ScheduleModule } from '@nestjs/schedule';
 import { NotificationProcessorService } from './cli/processor';
-import { NotificationConsumerService } from './cli/consume';
 
 @Module({
   imports: [
@@ -33,7 +32,6 @@ import { NotificationConsumerService } from './cli/consume';
     NotificationGateway,
     JwtStrategy,
     NotificationProcessorService,
-    NotificationConsumerService,
   ],
 })
 export class AppModule {}

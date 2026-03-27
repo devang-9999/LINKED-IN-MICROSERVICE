@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 
 import { Post } from '../../domain/post/entities/post.entity';
 import { Comment } from 'src/domain/comment/entities/comment.entity';
+import { OutboxEvent } from 'src/infrastructure/rabbitmq/outbox/outbox.entity';
 
 @Injectable()
 export class CommentService {
@@ -14,6 +14,9 @@ export class CommentService {
 
     @InjectRepository(Post)
     private readonly postRepository: Repository<Post>,
+
+    @InjectRepository(OutboxEvent)
+    private readonly outboxRepository: Repository<OutboxEvent>,
   ) {}
 
   async create(
@@ -48,6 +51,22 @@ export class CommentService {
     });
 
     await this.commentRepository.save(comment);
+
+    if (post.userId !== userId) {
+      await this.outboxRepository.save({
+        aggregateType: 'post',
+        aggregateId: postId,
+        eventType: 'post.commented',
+        payload: {
+          senderId: userId,
+          receiverId: post.userId,
+          postId,
+          commentText: text,
+        },
+      });
+
+      console.log('📤 Outbox event created: post.commented');
+    }
 
     return {
       message: parentCommentId ? 'Reply added' : 'Comment added',

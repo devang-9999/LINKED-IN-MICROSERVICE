@@ -1,19 +1,39 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../app.module';
-import { OutboxWorker } from '../infrastructure/outbox/outbox.worker';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
+import { OutboxWorker } from 'src/infrastructure/outbox/outbox.worker';
 
-async function bootstrap() {
-  const app = await NestFactory.createApplicationContext(AppModule);
+@Injectable()
+export class OutboxDispatcher implements OnModuleInit {
+  private readonly logger = new Logger(OutboxDispatcher.name);
+  private isRunning = false;
 
-  console.log('Starting Outbox Dispatch...');
+  constructor(private readonly worker: OutboxWorker) {}
 
-  const worker = app.get(OutboxWorker);
+  async onModuleInit() {
+    this.logger.log('Initial Outbox Dispatch...');
+    await this.safeRun();
+  }
 
-  await worker.run();
+  @Cron('*/5 * * * * *')
+  async handleCron() {
+    this.logger.log('Cron Triggered...');
+    await this.safeRun();
+  }
 
-  console.log('Outbox Dispatch Completed');
+  private async safeRun() {
+    if (this.isRunning) {
+      this.logger.warn('Previous job still running, skipping...');
+      return;
+    }
 
-  await app.close();
+    this.isRunning = true;
+
+    try {
+      await this.worker.run();
+    } catch (err) {
+      this.logger.error('Outbox dispatch failed', err);
+    } finally {
+      this.isRunning = false;
+    }
+  }
 }
-
-void bootstrap();

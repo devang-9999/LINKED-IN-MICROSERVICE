@@ -1,63 +1,49 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-// /* eslint-disable @typescript-eslint/no-floating-promises */
+/* eslint-disable @typescript-eslint/no-misused-promises */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 
-// import dataSource from 'src/infrastructure/database/data-source/data-source';
-// import { NotificationInboxWorker } from 'src/infrastructure/rabbitmq/consumer';
-
-// async function bootstrap() {
-//   try {
-//     await dataSource.initialize();
-//     console.log('✅ DB connected');
-
-//     const worker = new NotificationInboxWorker(dataSource);
-//     await worker.run();
-
-//     console.log('🚀 Notification consumer started');
-//   } catch (err) {
-//     console.error('❌ Worker failed:', err);
-//   }
-// }
-
-// bootstrap();
-
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
-import { DataSource } from 'typeorm';
+import dataSource from 'src/infrastructure/database/data-source/data-source';
 import { NotificationInboxWorker } from 'src/infrastructure/rabbitmq/consumer';
 
-@Injectable()
-export class NotificationConsumerService implements OnModuleInit {
-  private worker: NotificationInboxWorker;
-  private isInitialized = false;
+async function bootstrap() {
+  let worker: NotificationInboxWorker | null = null;
 
-  constructor(private dataSource: DataSource) {
-    this.worker = new NotificationInboxWorker(this.dataSource);
-  }
-
-  onModuleInit() {
-    console.log('🚀 Notification Consumer Initialized (Nest)');
-  }
-
-  @Cron('*/1 * * * * *')
-  async handleCron() {
-    if (this.isInitialized) {
-      console.log('⚠️ Consumer already running...');
-      return;
+  try {
+    if (!dataSource.isInitialized) {
+      await dataSource.initialize();
+      console.log('✅ DB connected');
     }
 
-    try {
-      if (!this.dataSource.isInitialized) {
-        await this.dataSource.initialize();
-        console.log('✅ DB connected (consumer)');
+    worker = new NotificationInboxWorker(dataSource);
+
+    await worker.run();
+
+    console.log('🚀 Notification consumer started');
+
+    const shutdown = async () => {
+      console.log('🛑 Graceful shutdown...');
+
+      try {
+        await worker?.stop();
+        await dataSource.destroy();
+        console.log('✅ Shutdown complete');
+      } catch (err) {
+        console.error('❌ Shutdown error:', err);
       }
 
-      await this.worker.run();
+      process.exit(0);
+    };
 
-      this.isInitialized = true;
+    process.on('SIGINT', shutdown);
+    process.on('SIGTERM', shutdown);
+  } catch (err) {
+    console.error('❌ Worker failed:', err);
 
-      console.log('🚀 Notification Consumer started via cron');
-    } catch (err) {
-      console.error('❌ Consumer cron error:', err.message);
+    if (dataSource.isInitialized) {
+      await dataSource.destroy();
     }
+
+    process.exit(1);
   }
 }
+
+bootstrap();

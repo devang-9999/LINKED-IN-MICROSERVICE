@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
 import { DataSource } from 'typeorm';
+import axios from 'axios';
 import { InboxEvent } from './inbox.entity';
 import { NotificationService } from 'src/application/notification.service';
 import { NotificationType } from 'src/domain/notification.entity';
@@ -39,20 +41,36 @@ export class NotificationInboxProcessor {
           case 'connection.requested':
             senderId = payload.senderId;
             receiverId = payload.receiverId;
-            message = `${payload.senderName} sent you a connection request`;
+            message = 'sent you a connection request';
             type = NotificationType.CONNECTION_REQUEST;
             break;
+
           case 'connection.accepted':
             senderId = payload.senderId;
             receiverId = payload.receiverId;
-            message = `${payload.senderName} accepted your connection`;
+            message = 'accepted your connection';
             type = NotificationType.CONNECTION_ACCEPTED;
             break;
+
           case 'user.followed':
             senderId = payload.senderId;
             receiverId = payload.receiverId;
-            message = `${payload.senderName || 'Someone'} started following you`;
+            message = 'started following you';
             type = NotificationType.FOLLOW;
+            break;
+
+          case 'post.liked':
+            senderId = payload.senderId;
+            receiverId = payload.receiverId;
+            message = 'liked your post';
+            type = NotificationType.POST_LIKE;
+            break;
+
+          case 'post.commented':
+            senderId = payload.senderId;
+            receiverId = payload.receiverId;
+            message = 'commented on your post';
+            type = NotificationType.POST_COMMENT;
             break;
 
           default:
@@ -69,13 +87,36 @@ export class NotificationInboxProcessor {
           continue;
         }
 
+        let senderName = 'Someone';
+        let senderAvatar: string | undefined;
+
+        try {
+          const usersRes = await axios.get(
+            `http://users-service:3002/profile/bulk`,
+            {
+              params: { ids: senderId },
+            },
+          );
+
+          const users = usersRes.data || [];
+          const sender = users[0];
+
+          if (sender) {
+            senderName =
+              `${sender.firstName || ''} ${sender.lastName || ''}`.trim();
+            senderAvatar = sender.profilePicture;
+          }
+        } catch (err) {
+          console.log('❌ Failed to fetch user:', err.message);
+        }
+
         await this.notificationService.createNotification(
           senderId,
           receiverId,
-          message,
+          `${senderName} ${message}`,
           type,
-          payload.senderName,
-          payload.senderAvatar,
+          senderName,
+          senderAvatar,
         );
 
         event.processed = true;
