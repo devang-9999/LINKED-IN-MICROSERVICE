@@ -31,7 +31,6 @@ export class ConnectionsService {
     private outboxRepository: Repository<OutboxEvent>,
   ) {}
 
-  // 🔥 SEND CONNECTION REQUEST
   async sendRequest(currentUserId: string, targetUserId: string) {
     if (currentUserId === targetUserId) {
       throw new BadRequestException('Cannot connect with yourself');
@@ -68,7 +67,6 @@ export class ConnectionsService {
 
     await this.connectionRepository.save(connection);
 
-    // ✅ ENRICHED OUTBOX EVENT
     await this.outboxRepository.save({
       aggregateType: 'connection',
       aggregateId: connection.id,
@@ -84,7 +82,6 @@ export class ConnectionsService {
     return { message: 'Connection request sent' };
   }
 
-  // 🔥 ACCEPT REQUEST
   async acceptRequest(connectionId: string) {
     const connection = await this.connectionRepository.findOne({
       where: { id: connectionId },
@@ -114,7 +111,6 @@ export class ConnectionsService {
     return { message: 'Connection accepted' };
   }
 
-  // 🔥 REJECT REQUEST
   async rejectRequest(connectionId: string) {
     const connection = await this.connectionRepository.findOne({
       where: { id: connectionId },
@@ -143,7 +139,6 @@ export class ConnectionsService {
     return { message: 'Connection rejected' };
   }
 
-  // 🔥 CANCEL REQUEST
   async cancelRequest(currentUserId: string, targetUserId: string) {
     const connection = await this.connectionRepository.findOne({
       where: {
@@ -162,7 +157,6 @@ export class ConnectionsService {
     return { message: 'Connection request cancelled' };
   }
 
-  // 🔥 GET CONNECTION STATUS
   async getConnectionStatus(currentUserId: string, targetUserId: string) {
     const connection = await this.connectionRepository.findOne({
       where: [
@@ -182,7 +176,6 @@ export class ConnectionsService {
     };
   }
 
-  // 🔥 RECEIVED REQUESTS
   async getReceivedRequests(currentUserId: string) {
     const requests = await this.connectionRepository.find({
       where: {
@@ -208,7 +201,6 @@ export class ConnectionsService {
     }));
   }
 
-  // 🔥 SENT REQUESTS
   async getSentRequests(currentUserId: string) {
     const requests = await this.connectionRepository.find({
       where: {

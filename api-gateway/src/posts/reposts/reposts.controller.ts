@@ -42,7 +42,6 @@ export class RepostsController {
     }
   }
 
-  // 🔥 ENRICHED REPOSTS
   @Get()
   async getAll(
     @Query('page') page = 1,

@@ -23,11 +23,11 @@ export async function createRabbitMQConnection() {
         durable: true,
       });
 
-      console.log('✅ RabbitMQ connected');
+      console.log('RabbitMQ connected');
 
       return { connection, channel, exchange };
     } catch (error) {
-      console.log('❌ RabbitMQ connection failed. Retrying in 5s...');
+      console.log('RabbitMQ connection failed. Retrying in 5s...');
       await new Promise((res) => setTimeout(res, 5000));
     }
   }

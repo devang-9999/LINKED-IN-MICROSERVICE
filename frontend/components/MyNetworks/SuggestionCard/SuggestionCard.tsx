@@ -31,8 +31,6 @@ interface User {
   headline?: string;
   profilePicture?: string;
   coverPicture?: string;
-
-  // ✅ FROM BACKEND
   isFollowing?: boolean;
   followersCount?: number;
   connectionStatus?: "PENDING" | "ACCEPTED" | null;
@@ -58,7 +56,6 @@ export default function SuggestionCard({
   const [loadingFollow, setLoadingFollow] = useState(false);
   const [loadingConnect, setLoadingConnect] = useState(false);
 
-  // ✅ INIT FROM BACKEND DATA
   useEffect(() => {
     if (!user?.id) return;
 
@@ -72,7 +69,6 @@ export default function SuggestionCard({
     }
   }, [user]);
 
-  // ================= FOLLOW =================
 
   const handleFollowToggle = async () => {
     if (loadingFollow) return;
@@ -101,7 +97,6 @@ export default function SuggestionCard({
     }
   };
 
-  // ================= CONNECT =================
 
   const handleConnectToggle = async () => {
     if (loadingConnect) return;
@@ -136,7 +131,6 @@ export default function SuggestionCard({
     }
   };
 
-  // ================= UI =================
 
   return (
     <Paper elevation={0} className="suggestion-card">
@@ -184,7 +178,6 @@ export default function SuggestionCard({
           {followersCount} followers
         </Typography>
 
-        {/* FOLLOW */}
         <Button
           startIcon={!followed ? <AddIcon /> : undefined}
           fullWidth
@@ -208,7 +201,6 @@ export default function SuggestionCard({
           {loadingFollow ? "Loading..." : followed ? "Following" : "Follow"}
         </Button>
 
-        {/* CONNECT */}
         <Button
           fullWidth
           disabled={loadingConnect}

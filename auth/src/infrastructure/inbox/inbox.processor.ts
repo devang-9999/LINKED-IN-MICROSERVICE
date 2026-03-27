@@ -18,7 +18,7 @@ export class InboxProcessor {
       take: 50,
     });
 
-    console.log(`📥 Processing ${events.length} inbox events...`);
+    console.log(`Processing ${events.length} inbox events...`);
 
     for (const event of events) {
       try {
@@ -30,15 +30,15 @@ export class InboxProcessor {
             break;
 
           default:
-            console.log(`⚠️ Unknown event: ${event.eventType}`);
+            console.log(`Unknown event: ${event.eventType}`);
         }
 
         event.processed = true;
         await inboxRepo.save(event);
 
-        console.log(`✅ Processed: ${event.eventType}`);
+        console.log(`Processed: ${event.eventType}`);
       } catch (error) {
-        console.error(`❌ Failed: ${event.eventType}`, error);
+        console.error(`Failed: ${event.eventType}`, error);
       }
     }
   }
@@ -46,7 +46,7 @@ export class InboxProcessor {
   private async handleUserDeleted(authRepo: any, payload: any) {
     const { userId } = payload;
 
-    console.log('🗑️ Deleting user from auth:', userId);
+    console.log('Deleting user from auth:', userId);
 
     await authRepo.delete({ userId });
   }

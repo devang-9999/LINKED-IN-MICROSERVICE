@@ -22,7 +22,6 @@ export const useComments = () => {
   const [replyPage, setReplyPage] = useState<Record<string, number>>({});
   const [hasMoreReplies, setHasMoreReplies] = useState<Record<string, boolean>>({});
 
-  // ================== COMMENT LIKES ==================
   const fetchCommentLikes = async (commentId: string) => {
     try {
       const res = await getCommentLikesApi(commentId);
@@ -40,21 +39,18 @@ export const useComments = () => {
     try {
       await toggleCommentLikeApi({ commentId });
 
-      // ✅ Always sync (NO buggy optimistic logic)
       fetchCommentLikes(commentId);
     } catch (err) {
       console.error("Error toggling comment like:", err);
     }
   };
 
-  // ================== COMMENTS ==================
   const fetchComments = async (postId: string, page = 1) => {
     try {
       const res = await getCommentsApi(postId, page);
 
       const newComments = res.data.comments;
 
-      // fetch likes for each comment
       newComments.forEach((c: any) => fetchCommentLikes(c.id));
 
       setComments((prev) => ({
@@ -88,7 +84,7 @@ export const useComments = () => {
     }));
 
     if (!isOpen) {
-      fetchComments(postId, 1); // first 2 comments
+      fetchComments(postId, 1);
     }
   };
 
@@ -109,13 +105,12 @@ export const useComments = () => {
         [postId]: "",
       }));
 
-      fetchComments(postId, 1); // refresh
+      fetchComments(postId, 1); 
     } catch (err) {
       console.error("Error adding comment:", err);
     }
   };
 
-  // ================== REPLIES ==================
   const fetchReplies = async (commentId: string, page = 1) => {
     try {
       const res = await getRepliesApi(commentId, page);
@@ -183,7 +178,6 @@ export const useComments = () => {
     }
   };
 
-  // ================== RETURN ==================
   return {
     comments,
     openComments,

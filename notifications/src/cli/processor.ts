@@ -68,7 +68,7 @@ export class NotificationProcessorService implements OnModuleInit {
     console.log('🚀 Notification Processor Initialized (Nest)');
   }
 
-  @Cron('*/0 * * * * *')
+  @Cron('*/1 * * * * *')
   async handleCron() {
     try {
       await this.processor.run();

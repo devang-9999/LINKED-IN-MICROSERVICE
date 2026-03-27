@@ -136,7 +136,6 @@ export default function ProfileSections({
         </Paper>
       )}
 
-      {/* ================= EDUCATION ================= */}
 
       {education.length === 0 ? (
         <Paper
@@ -215,7 +214,6 @@ export default function ProfileSections({
         </Paper>
       )}
 
-      {/* ================= SKILLS ================= */}
 
       {skills.length === 0 ? (
         <Paper

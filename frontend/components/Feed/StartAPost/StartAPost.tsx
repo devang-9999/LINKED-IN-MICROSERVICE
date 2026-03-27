@@ -25,7 +25,6 @@ export default function StartPostCard({ onOpen, user }: Props) {
   return (
     <Paper elevation={1} className="start-post-card">
       
-      {/* TOP INPUT */}
       <Stack direction="row" spacing={1.5} alignItems="center">
         <Avatar
           src={avatar}
@@ -47,7 +46,6 @@ export default function StartPostCard({ onOpen, user }: Props) {
         </Button>
       </Stack>
 
-      {/* ACTION BUTTONS */}
       <Stack direction="row" className="start-post-actions">
         
         <Stack

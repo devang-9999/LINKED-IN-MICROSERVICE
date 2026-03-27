@@ -38,7 +38,7 @@ export class NotificationConsumerService implements OnModuleInit {
     console.log('🚀 Notification Consumer Initialized (Nest)');
   }
 
-  @Cron('*/0 * * * * *') // every 5 seconds
+  @Cron('*/1 * * * * *')
   async handleCron() {
     if (this.isInitialized) {
       console.log('⚠️ Consumer already running...');

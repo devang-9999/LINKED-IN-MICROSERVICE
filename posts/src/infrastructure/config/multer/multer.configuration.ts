@@ -33,9 +33,7 @@ export const multerOptions = {
       callback: (error: null, filename: string) => void,
     ) => {
       const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
-
       const fileExtension = extname(file.originalname);
-
       callback(null, uniqueName + fileExtension);
     },
   }),
@@ -47,10 +45,8 @@ export const multerOptions = {
         false,
       );
     }
-
     callback(null, true);
   },
-
   limits: {
     fileSize: 20 * 1024 * 1024,
   },

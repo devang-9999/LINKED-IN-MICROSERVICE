@@ -90,9 +90,9 @@ export default function LinkedInNavbar() {
       setNotificationCount(data.unreadCount);
     });
 
-    // socket.on("notification", () => {
-    //   setNotificationCount((prev) => prev + 1);
-    // });
+    socket.on("notification", () => {
+      setNotificationCount((prev) => prev + 1);
+    });
 
     return () => {
       socket.off("notification");
@@ -148,7 +148,6 @@ export default function LinkedInNavbar() {
           </div>
         </Box>
 
-        {/* ================= RIGHT ================= */}
 
         <Box className="li-right">
           <div className="li-nav-item">
@@ -179,7 +178,6 @@ export default function LinkedInNavbar() {
             <span>Messaging</span>
           </div>
 
-          {/* ================= NOTIFICATIONS ================= */}
 
           <div className="li-nav-item">
             <IconButton
@@ -195,7 +193,6 @@ export default function LinkedInNavbar() {
 
           <Divider orientation="vertical" flexItem />
 
-          {/* ================= PROFILE ================= */}
 
           <div
             className="li-profile"

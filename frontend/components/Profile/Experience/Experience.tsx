@@ -217,7 +217,6 @@ export default function ExperienceForm({ onClose, onSuccess }: Props) {
           </TextField>
         </Box>
 
-        {/* END DATE */}
         {!form.currentlyWorking && (
           <>
             <Typography className="exp-section">
@@ -268,7 +267,6 @@ export default function ExperienceForm({ onClose, onSuccess }: Props) {
           </>
         )}
 
-        {/* DESCRIPTION */}
         <TextField
           label="Description"
           name="description"
@@ -280,7 +278,6 @@ export default function ExperienceForm({ onClose, onSuccess }: Props) {
           onChange={handleChange}
         />
 
-        {/* ACTIONS */}
         <Box className="exp-actions">
           <Button
             variant="contained"

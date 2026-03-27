@@ -4,8 +4,6 @@
   height: 120vh;
 }
 
-
-
 .my-network-container {
   max-width: 1128px;
   margin: 24px auto;   
@@ -18,23 +16,17 @@
   align-items: start; 
 }
 
-
-
 .left-column {
   position: sticky;
   top: 76px;  
   align-self: start;
 }
 
-
-
 .main-column {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
-
-
 
 .suggestion-section {
   background: white;

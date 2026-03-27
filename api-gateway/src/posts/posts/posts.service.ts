@@ -77,10 +77,6 @@ export class PostsService {
       }
 
       const userMap = new Map(users.map((u: any) => [u.id, u]));
-      console.log(
-        userMap,
-        '-------------------------------------------------->',
-      );
       const enrichedPosts = posts.map((post: any) => ({
         ...post,
         user: userMap.get(post.userId) || null,
@@ -93,7 +89,7 @@ export class PostsService {
         limit: postsResponse.data?.limit || 10,
       };
     } catch (error) {
-      console.error('🔥 getAllPosts error:', error?.response?.data || error);
+      console.error(' getAllPosts error:', error?.response?.data || error);
 
       throw new Error('Failed to fetch posts');
     }
@@ -125,7 +121,6 @@ export class PostsService {
   //     user: userMap.get(post.userId) || null,
   //   }));
 
-  //   // ✅ RETURN CLEAN OBJECT (NO AXIOS TYPES)
   //   return {
   //     posts: enrichedPosts,
   //     total: postsResponse.data.total,

@@ -5,7 +5,6 @@
   gap: 12px;
 }
 
-/* ================= NETWORK CARD ================= */
 
 .network-card {
   border-radius: 8px !important;
@@ -47,7 +46,6 @@
   cursor: pointer;
 }
 
-/* ================= JOB CARD ================= */
 
 .job-card {
   border-radius: 8px !important;
@@ -86,7 +84,6 @@
   display: block;
 }
 
-/* ================= FOOTER ================= */
 
 .network-footer {
   text-align: center;

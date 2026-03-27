@@ -16,7 +16,6 @@ export class InboxWorker {
 
     await channel.assertQueue(queue, { durable: true });
 
-    // bind events
     await channel.bindQueue(queue, exchange, 'auth.user.registered');
 
     console.log('Consuming events...');

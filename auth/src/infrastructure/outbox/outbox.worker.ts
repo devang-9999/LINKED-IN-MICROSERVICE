@@ -38,9 +38,9 @@ export class OutboxWorker {
         event.processed = true;
         await repo.save(event);
 
-        console.log('✅ Dispatched:', event.eventType);
+        console.log('Dispatched:', event.eventType);
       } catch (err) {
-        console.error('❌ Failed:', event.eventType);
+        console.error('Failed:', event.eventType);
       }
     }
   }

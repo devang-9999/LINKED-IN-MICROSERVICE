@@ -45,7 +45,6 @@ export default function CompleteProfilePage({ onClose }: any) {
     type: "success" as "success" | "error",
   });
 
-  // 🔹 Handle text input
   const handleChange = (e: any) => {
     setFormDataState({
       ...formDataState,
@@ -53,7 +52,6 @@ export default function CompleteProfilePage({ onClose }: any) {
     });
   };
 
-  // 🔹 Validate file (VERY IMPORTANT)
   const validateFile = (file: File) => {
     const allowedTypes = [
       "image/jpeg",
@@ -71,7 +69,6 @@ export default function CompleteProfilePage({ onClose }: any) {
     }
   };
 
-  // 🔹 Handle image upload
   const handleImageChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     type: "profilePicture" | "coverPicture",

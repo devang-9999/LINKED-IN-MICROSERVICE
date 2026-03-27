@@ -56,7 +56,6 @@
   border-radius: 4px;
 }
 
-/* PREMIUM */
 .premium-card {
   border-radius: 10px !important;
   padding: 12px 14px;
@@ -84,7 +83,6 @@
   border-radius: 3px;
 }
 
-/* ANALYTICS */
 .analytics-card {
   border-radius: 10px !important;
   padding: 12px 14px;
@@ -116,7 +114,6 @@
   font-weight: 600;
 }
 
-/* SHORTCUTS */
 .shortcuts-card {
   border-radius: 10px !important;
   padding: 8px 0;

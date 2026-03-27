@@ -12,7 +12,6 @@ export class RepostsService {
   private postsServiceUrl = process.env.POSTS_SERVICE_URL;
   private usersServiceUrl = process.env.USERS_SERVICE_URL;
 
-  // ✅ CREATE
   async createRepost(postId: string, body: any, headers: any) {
     return axios.post(`${this.postsServiceUrl}/reposts/${postId}`, body, {
       headers,
@@ -20,12 +19,10 @@ export class RepostsService {
     });
   }
 
-  // 🔥 GET ALL REPOSTS (FULLY ENRICHED)
   async getAllReposts(page: number, limit: number, req: any) {
     try {
       const cookie = req.headers.cookie;
 
-      // ✅ 1. FETCH REPOSTS
       const repostResponse = await axios.get(
         `${this.postsServiceUrl}/reposts?page=${page}&limit=${limit}`,
         {
@@ -47,15 +44,11 @@ export class RepostsService {
       const userIds = [
         ...new Set(
           reposts
-            .flatMap((r: any) => [
-              r.userId, // 🔁 reposted by
-              r.post?.userId, // 📄 original author
-            ])
+            .flatMap((r: any) => [r.userId, r.post?.userId])
             .filter(Boolean),
         ),
       ];
 
-      // ✅ 3. FETCH USERS
       let users: any[] = [];
 
       if (userIds.length > 0) {
@@ -70,7 +63,6 @@ export class RepostsService {
         users = usersResponse.data || [];
       }
 
-      // ✅ 4. MAP USERS
       const userMap = new Map(users.map((u: any) => [u.id, u]));
 
       const enrichedReposts = reposts.map((r: any) => ({
@@ -91,12 +83,11 @@ export class RepostsService {
         limit: repostResponse.data?.limit || limit,
       };
     } catch (error) {
-      console.error('🔥 getAllReposts error:', error?.response?.data || error);
+      console.error('getAllReposts error:', error?.response?.data || error);
       throw new Error('Failed to fetch reposts');
     }
   }
 
-  // 🔥 GET REPOSTS BY POST (SAME FIX)
   async getRepostsByPost(
     postId: string,
     page: number,
@@ -155,15 +146,11 @@ export class RepostsService {
         limit,
       };
     } catch (error) {
-      console.error(
-        '🔥 getRepostsByPost error:',
-        error?.response?.data || error,
-      );
+      console.error('getRepostsByPost error:', error?.response?.data || error);
       throw new Error('Failed to fetch reposts by post');
     }
   }
 
-  // ✅ DELETE
   async deleteRepost(postId: string, headers: any) {
     return axios.delete(`${this.postsServiceUrl}/reposts/${postId}`, {
       headers,

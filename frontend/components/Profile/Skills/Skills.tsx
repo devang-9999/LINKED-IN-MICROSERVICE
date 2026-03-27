@@ -45,7 +45,7 @@ export default function SkillsForm({ onClose, onSuccess }: SkillsFormProps) {
       setLoading(true);
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/skills`, // ✅ FIXED
+        `${process.env.NEXT_PUBLIC_API_URL}/users/skills`, 
         {
           method: "POST",
           credentials: "include",
@@ -64,7 +64,6 @@ export default function SkillsForm({ onClose, onSuccess }: SkillsFormProps) {
 
       const data = await res.json();
 
-      // ✅ instant UI update
       if (onSuccess) onSuccess(data);
 
       setSkill("");

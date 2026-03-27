@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -11,14 +12,12 @@ import {
 
 export const useFeed = () => {
   const [posts, setPosts] = useState<any[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [reposts, setReposts] = useState<any[]>([]);
   const [feed, setFeed] = useState<any[]>([]);
 
   const [likes, setLikes] = useState<Record<string, number>>({});
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
 
-  // ✅ Build feed
   const buildFeed = (posts: any[], reposts: any[]) => {
     const combined = [
       ...posts.map((p) => ({
@@ -43,8 +42,6 @@ export const useFeed = () => {
 
     setFeed(combined);
   };
-
-  // ✅ Load feed
   const loadFeed = async () => {
     try {
       const [postsRes, repostRes] = await Promise.all([
@@ -63,8 +60,6 @@ export const useFeed = () => {
       console.error("Error loading feed:", err);
     }
   };
-
-  // ✅ Fetch ALL likes (optimized)
   const fetchAllLikes = async (postsList: any[]) => {
     try {
       const results = await Promise.all(
@@ -89,7 +84,6 @@ export const useFeed = () => {
   };
 const handleLike = async (postId: string) => {
   try {
-    // optimistic
     setLikedPosts((prev) => ({
       ...prev,
       [postId]: !prev[postId],
@@ -100,7 +94,6 @@ const handleLike = async (postId: string) => {
       [postId]: prev[postId] + (likedPosts[postId] ? -1 : 1),
     }));
 
-    // real sync
     const res = await togglePostLikeApi({ postId });
     const updated = await getPostLikes(postId);
 
@@ -118,12 +111,10 @@ const handleLike = async (postId: string) => {
   }
 };
 
-  // ✅ Initial load
   useEffect(() => {
     loadFeed();
   }, []);
 
-  // ✅ Fetch likes AFTER posts load
   useEffect(() => {
     if (posts.length) {
       fetchAllLikes(posts);

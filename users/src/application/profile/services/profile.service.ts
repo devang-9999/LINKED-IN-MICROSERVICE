@@ -59,13 +59,11 @@ export class ProfileService {
   ) {
     const user = await this.findUser(userId);
 
-    // ✅ Update text fields safely
     if (dto.firstName !== undefined) user.firstName = dto.firstName;
     if (dto.lastName !== undefined) user.lastName = dto.lastName;
     if (dto.headline !== undefined) user.headline = dto.headline;
     if (dto.about !== undefined) user.about = dto.about;
 
-    // ✅ Update images if provided
     if (profilePicture) {
       user.profilePicture = profilePicture;
     }
@@ -182,8 +180,6 @@ export class ProfileService {
       users
         .filter((user) => {
           const connection = connectionMap.get(user.id);
-
-          // ✅ ONLY remove accepted connections
           if (connection?.status === 'ACCEPTED') return false;
 
           return true;

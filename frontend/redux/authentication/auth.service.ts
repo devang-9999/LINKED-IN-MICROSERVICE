@@ -84,13 +84,6 @@ export const updateProfileApi = async (
 export const getCurrentUserApi = async (
   userid: string
 ) => {
-
-  // OLD
-  // const res = await fetch(
-  //   `http://localhost:3001/auth/me/${userid}`
-  // );
-
-  // NEW
   const res = await fetch(
     `${API_BASE_URL}/users/me`,
     {

@@ -48,7 +48,6 @@ export default function LeftSidebar() {
     }
   }, [API_BASE_URL]);
 
-  // ✅ SAFE IMAGE URL BUILDER
   const getImageUrl = (path?: string) => {
     if (!path) return undefined;
     return `${API_BASE_URL}/uploads/${path}`;
@@ -66,7 +65,6 @@ export default function LeftSidebar() {
   return (
     <Box className="left-sidebar">
       <Paper className="profile-card">
-        {/* COVER */}
         <div
           className="profile-cover"
           style={{
@@ -78,7 +76,6 @@ export default function LeftSidebar() {
           }}
         />
 
-        {/* AVATAR */}
         <Avatar
           src={getImageUrl(profile?.profilePicture)}
           className="profile-avatar"
@@ -86,7 +83,6 @@ export default function LeftSidebar() {
           {!profile?.profilePicture && fullName.charAt(0)}
         </Avatar>
 
-        {/* INFO */}
         <div className="profile-info">
           <Typography className="profile-name">
             {fullName}
@@ -107,7 +103,6 @@ export default function LeftSidebar() {
         </div>
       </Paper>
 
-      {/* PREMIUM */}
       <Paper className="premium-card">
         <Typography className="premium-text">
           Access exclusive tools & insights
@@ -119,7 +114,6 @@ export default function LeftSidebar() {
         </div>
       </Paper>
 
-      {/* ANALYTICS */}
       <Paper className="analytics-card">
         <Typography className="analytics-title">
           View all analytics
@@ -139,7 +133,6 @@ export default function LeftSidebar() {
         </div>
       </Paper>
 
-      {/* SHORTCUTS */}
       <Paper className="shortcuts-card">
         <div className="shortcut-row">
           <BookmarkIcon />

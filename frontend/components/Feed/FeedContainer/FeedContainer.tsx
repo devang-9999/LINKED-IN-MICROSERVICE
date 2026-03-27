@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
@@ -178,10 +179,8 @@ export default function FeedContainer() {
             </Stack>
           )}
 
-          {/* ✅ ADDED: SHOW REPLIES */}
           {c.replies && renderComments(c.replies, postId, level + 1)}
 
-          {/* ✅ ADDED: VIEW MORE REPLIES */}
           {hasMoreReplies[c.id] && (
             <Typography
               sx={{

@@ -19,7 +19,7 @@ export class OutboxRunner implements OnModuleInit {
     console.log('🚀 Outbox Runner Initialized');
   }
 
-  @Cron('*/0 * * * * *')
+  @Cron('*/1 * * * * *')
   async handleCron() {
     if (this.isRunning) {
       console.log('⚠️ Outbox already running...');

@@ -14,7 +14,6 @@ export class NotificationService {
     private notificationGateway: NotificationGateway,
   ) {}
 
-  // 🔥 CREATE NOTIFICATION (called by connections service)
   async createNotification(
     senderId: string,
     receiverId: string,
@@ -23,7 +22,6 @@ export class NotificationService {
     senderName?: string,
     senderAvatar?: string,
   ): Promise<Notification | null> {
-    // ✅ prevent self-notifications
     if (senderId === receiverId) return null;
 
     const notification = this.notificationRepo.create({
@@ -37,15 +35,9 @@ export class NotificationService {
     });
 
     const savedNotification = await this.notificationRepo.save(notification);
-
-    // 🔥 REAL-TIME EMIT
     this.notificationGateway.sendNotification(receiverId, savedNotification);
-
-    // 🔥 UPDATE COUNT
     const unreadCount = await this.getUnreadCount(receiverId);
-
     this.notificationGateway.sendUnreadCount(receiverId, unreadCount);
-
     return savedNotification;
   }
 
@@ -65,7 +57,6 @@ export class NotificationService {
     });
   }
 
-  // 🔥 MARK SINGLE AS READ
   async markAsRead(notificationId: string): Promise<Notification> {
     const notification = await this.notificationRepo.findOne({
       where: { id: notificationId },
@@ -75,24 +66,18 @@ export class NotificationService {
       throw new NotFoundException('Notification not found');
     }
 
-    // already read
     if (notification.isRead) return notification;
 
     notification.isRead = true;
     const updated = await this.notificationRepo.save(notification);
-
-    // 🔥 update count
     const unreadCount = await this.getUnreadCount(notification.receiverId);
-
     this.notificationGateway.sendUnreadCount(
       notification.receiverId,
       unreadCount,
     );
-
     return updated;
   }
 
-  // 🔥 MARK ALL AS READ
   async markAllAsRead(userId: string) {
     await this.notificationRepo.update(
       {
@@ -104,7 +89,6 @@ export class NotificationService {
       },
     );
 
-    // 🔥 instantly update UI
     this.notificationGateway.sendUnreadCount(userId, 0);
 
     return {
@@ -112,7 +96,6 @@ export class NotificationService {
     };
   }
 
-  // 🔥 OPTIONAL (ADVANCED) — DELETE NOTIFICATION
   async deleteNotification(notificationId: string) {
     const notification = await this.notificationRepo.findOne({
       where: { id: notificationId },
@@ -121,11 +104,8 @@ export class NotificationService {
     if (!notification) {
       throw new NotFoundException('Notification not found');
     }
-
     await this.notificationRepo.remove(notification);
-
     const unreadCount = await this.getUnreadCount(notification.receiverId);
-
     this.notificationGateway.sendUnreadCount(
       notification.receiverId,
       unreadCount,

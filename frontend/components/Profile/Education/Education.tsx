@@ -53,7 +53,7 @@ export default function EducationForm({ onClose, onSuccess }: Props) {
       setLoading(true);
 
       const payload = {
-        school: form.schoolName, // ✅ FIXED
+        school: form.schoolName, 
         degree: form.degree || undefined,
         fieldOfStudy: form.fieldOfStudy || undefined,
         startDate: formatDate(form.startMonth, form.startYear),
@@ -61,7 +61,7 @@ export default function EducationForm({ onClose, onSuccess }: Props) {
       };
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/education`, // ✅ FIXED
+        `${process.env.NEXT_PUBLIC_API_URL}/users/education`,
         {
           method: "POST",
           credentials: "include",
@@ -80,7 +80,7 @@ export default function EducationForm({ onClose, onSuccess }: Props) {
 
       const data = await res.json();
 
-      if (onSuccess) onSuccess(data); // ✅ instant UI update
+      if (onSuccess) onSuccess(data);
       if (onClose) onClose();
 
     } catch (error) {

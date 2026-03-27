@@ -72,7 +72,6 @@ export class InteractionsService {
       user: userMap.get(c.userId) || null,
     }));
 
-    // 5. return updated response
     return {
       ...response,
       data: {

@@ -7,7 +7,6 @@ const API = axios.create({
   withCredentials: true,
 });
 
-// ================= FOLLOW =================
 
 export const followUser = async (userId: string) => {
   return API.post(`/users/followers/${userId}`);
@@ -16,8 +15,6 @@ export const followUser = async (userId: string) => {
 export const unfollowUser = async (userId: string) => {
   return API.delete(`/users/followers/${userId}`);
 };
-
-// ================= CONNECTION =================
 
 export const toggleConnection = async (userId: string) => {
   return API.post(`/users/connections/request/${userId}`);

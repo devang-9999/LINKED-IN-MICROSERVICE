@@ -55,7 +55,6 @@ export default function ProfileHeader({
           position: "relative",
         }}
       >
-        {/* Upload cover */}
         <IconButton
           component="label"
           sx={{
@@ -71,7 +70,6 @@ export default function ProfileHeader({
         </IconButton>
       </div>
 
-      {/* 🔵 PROFILE INFO */}
       <div className="profile-info">
         <Box sx={{ position: "relative", width: "fit-content" }}>
           <Avatar
@@ -86,7 +84,7 @@ export default function ProfileHeader({
             }}
             imgProps={{
               onError: (e: any) => {
-                e.target.src = ""; // fallback if broken
+                e.target.src = ""; 
               },
             }}
           >

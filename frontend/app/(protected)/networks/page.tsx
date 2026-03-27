@@ -118,7 +118,6 @@ export default function MyNetworkPage() {
         <main className="main-column">
           <InviteConnectionsCard />
 
-          {/* ✅ INVITATIONS (FIXED + CLEAN) */}
           {requests.length > 0 && (
             <Paper sx={{ mb: 2 }}>
               <Box
@@ -185,7 +184,6 @@ export default function MyNetworkPage() {
             </Paper>
           )}
 
-          {/* ================= SUGGESTIONS ================= */}
           <div className="suggestion-section">
             <div className="suggestion-header">
               <h3>People you may know</h3>

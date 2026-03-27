@@ -74,9 +74,7 @@ export class NotificationGateway
 
   sendNotification(userId: string, payload: any) {
     if (!userId) return;
-
     this.server.to(userId).emit('notification', payload);
-
     console.log(`📨 Notification sent to ${userId}`);
   }
 

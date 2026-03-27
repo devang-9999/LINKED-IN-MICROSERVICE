@@ -27,7 +27,7 @@ import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAlt
 import DeleteIcon from "@mui/icons-material/Delete";
 
 import axios from "axios";
-import { getImageUrl } from "@/utils/getImage"; // ✅ your helper
+import { getImageUrl } from "@/utils/getImage"; 
 
 interface Props {
   open: boolean;
@@ -51,7 +51,6 @@ export default function PostModal({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ✅ CLEAN PREVIEW MEMORY
   useEffect(() => {
     if (!file) {
       setPreview(null);
@@ -88,7 +87,6 @@ export default function PostModal({
         withCredentials: true,
       });
 
-      // ✅ RESET
       setContent("");
       setFile(null);
 
@@ -101,7 +99,6 @@ export default function PostModal({
     }
   };
 
-  // ✅ FIXED AVATAR (VERY IMPORTANT)
   const avatar = getImageUrl(user?.profilePicture);
 
   const fullName =
@@ -112,7 +109,6 @@ export default function PostModal({
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogContent className="post-modal-content">
-        {/* HEADER */}
         <Box className="post-modal-header">
           <Stack direction="row" spacing={1.5} alignItems="center">
             <Avatar
@@ -137,7 +133,6 @@ export default function PostModal({
           </IconButton>
         </Box>
 
-        {/* TEXT INPUT */}
         <TextField
           multiline
           minRows={6}
@@ -147,7 +142,6 @@ export default function PostModal({
           onChange={(e) => setContent(e.target.value)}
         />
 
-        {/* MEDIA PREVIEW */}
         {preview && (
           <Box className="preview-container">
             <IconButton className="remove-media" onClick={removeMedia}>
@@ -164,7 +158,6 @@ export default function PostModal({
           </Box>
         )}
 
-        {/* FILE INPUT */}
         <input
           type="file"
           accept="image/*,video/*"
@@ -173,7 +166,6 @@ export default function PostModal({
           onChange={handleFileSelect}
         />
 
-        {/* ACTIONS */}
         <Box className="post-bottom">
           <Stack direction="row" spacing={1} alignItems="center">
             <IconButton>
@@ -199,7 +191,6 @@ export default function PostModal({
             </IconButton>
           </Stack>
 
-          {/* POST BUTTON */}
           <Button
             variant="contained"
             onClick={handlePost}

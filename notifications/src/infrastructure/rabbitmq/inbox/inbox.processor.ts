@@ -49,7 +49,6 @@ export class NotificationInboxProcessor {
             type = NotificationType.CONNECTION_ACCEPTED;
             break;
           case 'user.followed':
-            // ✅ YOUR ACTUAL PAYLOAD STRUCTURE
             senderId = payload.senderId;
             receiverId = payload.receiverId;
             message = `${payload.senderName || 'Someone'} started following you`;
@@ -70,7 +69,6 @@ export class NotificationInboxProcessor {
           continue;
         }
 
-        // ❌ NO SOCKET HERE
         await this.notificationService.createNotification(
           senderId,
           receiverId,

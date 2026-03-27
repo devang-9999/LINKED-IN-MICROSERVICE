@@ -53,7 +53,6 @@
   color: #e16745;
 }
 
-/* ================= POST CARD ================= */
 .post-card {
   padding: 16px;
   border-radius: 12px;
@@ -76,7 +75,6 @@
   font-size: 14px;
 }
 
-/* ================= MEDIA ================= */
 .post-image,
 .post-video {
   width: 100%;
@@ -84,7 +82,6 @@
   margin-top: 12px;
 }
 
-/* ================= ACTIONS ================= */
 .post-actions {
   display: flex;
   justify-content: space-between; /* FIXED */
@@ -94,7 +91,7 @@
 }
 
 .action-btn {
-  flex: 1; /* FIXED alignment */
+  flex: 1; 
   justify-content: center;
   display: flex;
   align-items: center;
@@ -109,7 +106,6 @@
   background: #f3f2ef;
 }
 
-/* ================= LIKE ================= */
 .like-btn {
   transition: transform 0.2s ease, color 0.2s ease;
 }
@@ -138,7 +134,6 @@
   }
 }
 
-/* ================= COMMENTS ================= */
 .comment-section {
   margin-top: 12px;
 }

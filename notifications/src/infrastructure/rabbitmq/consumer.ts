@@ -12,7 +12,6 @@ export class NotificationInboxWorker {
   constructor(private dataSource: DataSource) {}
 
   async run() {
-    // جلوگیری duplicate consumers
     if (this.isRunning) {
       console.log('⚠️ Consumer already running...');
       return;
@@ -34,7 +33,6 @@ export class NotificationInboxWorker {
 
       console.log('📥 Notification service consuming events...');
 
-      // 👇 Handle connection close (VERY IMPORTANT)
       connection.on('close', () => {
         console.error('❌ RabbitMQ connection closed');
         this.isRunning = false;
@@ -67,14 +65,11 @@ export class NotificationInboxWorker {
         } catch (err) {
           console.error('❌ Message processing failed:', err);
 
-          // ❗ avoid infinite retry loop
           channel.nack(msg, false, false);
         }
       });
     } catch (err) {
       console.error('❌ Consumer startup failed:', err);
-
-      // allow cron to retry
       this.isRunning = false;
     }
   }

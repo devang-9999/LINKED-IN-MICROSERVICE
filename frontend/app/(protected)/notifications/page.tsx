@@ -54,7 +54,6 @@ export default function Notifications() {
     }
   };
 
-  // ✅ MARK AS READ
   const markAsRead = async (notification: Notification) => {
     if (notification.isRead) return;
 
@@ -75,36 +74,34 @@ export default function Notifications() {
   };
 
   useEffect(() => {
-    fetchNotifications();
+  let socket = getSocket();
 
-    let socket = getSocket();
+  if (!socket) {
+    socket = connectSocket();
+  }
 
-    if (!socket) {
-      socket = connectSocket();
-    }
+  socket.on("notification", (data: Notification) => {
+    console.log("📨 New notification:", data);
 
-    // 🔥 REAL-TIME NOTIFICATION
-    socket.on("notification", (data: Notification) => {
-      console.log("📨 New notification:", data);
+    setNotifications((prev) => {
+      const exists = prev.find((n) => n.id === data.id);
+      if (exists) return prev;
 
-      setNotifications((prev) => {
-        const exists = prev.find((n) => n.id === data.id);
-        if (exists) return prev;
-
-        return [data, ...prev];
-      });
+      return [data, ...prev];
     });
+  });
 
-    // 🔔 ONLY UPDATE COUNT (NO REFETCH)
-    socket.on("notification-count", ({ unreadCount }) => {
-      console.log("🔔 Unread count:", unreadCount);
-    });
+  socket.on("notification-count", ({ unreadCount }) => {
+    console.log("🔔 Unread count:", unreadCount);
+  });
 
-    return () => {
-      socket?.off("notification");
-      socket?.off("notification-count");
-    };
-  }, []);
+  fetchNotifications();
+
+  return () => {
+    socket?.off("notification");
+    socket?.off("notification-count");
+  };
+}, []);
 
   return (
     <Box className="notification-page">
