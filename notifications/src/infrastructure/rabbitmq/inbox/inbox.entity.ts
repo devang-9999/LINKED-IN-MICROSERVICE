@@ -21,4 +21,7 @@ export class InboxEvent {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column()
+  receiverId: string;
 }

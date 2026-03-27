@@ -70,7 +70,7 @@ export default function LinkedInNavbar() {
           { withCredentials: true },
         );
 
-        setNotificationCount(countRes.data);
+   setNotificationCount(countRes.data);
       } catch (error) {
         console.error("Navbar data fetch failed", error);
       } finally {
@@ -90,9 +90,9 @@ export default function LinkedInNavbar() {
       setNotificationCount(data.unreadCount);
     });
 
-    socket.on("notification", () => {
-      setNotificationCount((prev) => prev + 1);
-    });
+    // socket.on("notification", () => {
+    //   setNotificationCount((prev) => prev + 1);
+    // });
 
     return () => {
       socket.off("notification");

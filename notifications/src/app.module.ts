@@ -1,19 +1,20 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport'; // ✅ ADD
-
+import { PassportModule } from '@nestjs/passport';
 import dataSource from './infrastructure/database/data-source/data-source';
-
 import { Notification } from './domain/notification.entity';
 import { NotificationController } from './presentation/notification.controller';
 import { NotificationService } from './application/notification.service';
 import { NotificationGateway } from './application/notification.gateway';
-
 import { JwtStrategy } from './infrastructure/security/jwt.strategy';
+import { ScheduleModule } from '@nestjs/schedule';
+import { NotificationProcessorService } from './cli/processor';
+import { NotificationConsumerService } from './cli/consume';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRoot(dataSource.options),
     TypeOrmModule.forFeature([Notification]),
 
@@ -27,6 +28,12 @@ import { JwtStrategy } from './infrastructure/security/jwt.strategy';
 
   controllers: [NotificationController],
 
-  providers: [NotificationService, NotificationGateway, JwtStrategy],
+  providers: [
+    NotificationService,
+    NotificationGateway,
+    JwtStrategy,
+    NotificationProcessorService,
+    NotificationConsumerService,
+  ],
 })
 export class AppModule {}

@@ -22,47 +22,63 @@ export class NotificationInboxProcessor {
       take: 50,
     });
 
+    if (!events.length) return;
+
+    console.log(`📥 Processing ${events.length} events...`);
+
     for (const event of events) {
       const payload = event.payload;
 
       try {
+        let senderId: string | undefined;
+        let receiverId: string | undefined;
+        let message = '';
+        let type: NotificationType | undefined;
+
         switch (event.eventType) {
           case 'connection.requested':
-            await this.notificationService.createNotification(
-              payload.senderId,
-              payload.receiverId,
-              `${payload.senderName} sent you a connection request`,
-              NotificationType.CONNECTION_REQUEST,
-              payload.senderName,
-              payload.senderAvatar,
-            );
+            senderId = payload.senderId;
+            receiverId = payload.receiverId;
+            message = `${payload.senderName} sent you a connection request`;
+            type = NotificationType.CONNECTION_REQUEST;
             break;
-
-          // 🔥 CONNECTION ACCEPTED
           case 'connection.accepted':
-            await this.notificationService.createNotification(
-              payload.senderId,
-              payload.receiverId,
-              `${payload.senderName} accepted your connection`,
-              NotificationType.CONNECTION_ACCEPTED,
-
-              payload.senderName,
-              payload.senderAvatar,
-            );
+            senderId = payload.senderId;
+            receiverId = payload.receiverId;
+            message = `${payload.senderName} accepted your connection`;
+            type = NotificationType.CONNECTION_ACCEPTED;
             break;
-
-          // 🔥 FOLLOW
           case 'user.followed':
-            await this.notificationService.createNotification(
-              payload.senderId,
-              payload.receiverId,
-              `${payload.senderName} started following you`,
-              NotificationType.FOLLOW,
-              payload.senderName,
-              payload.senderAvatar,
-            );
+            // ✅ YOUR ACTUAL PAYLOAD STRUCTURE
+            senderId = payload.senderId;
+            receiverId = payload.receiverId;
+            message = `${payload.senderName || 'Someone'} started following you`;
+            type = NotificationType.FOLLOW;
             break;
+
+          default:
+            console.log('⚠️ Skipping event:', event.eventType);
+            event.processed = true;
+            await repo.save(event);
+            continue;
         }
+
+        if (!senderId || !receiverId) {
+          console.log('❌ Invalid payload:', payload);
+          event.processed = true;
+          await repo.save(event);
+          continue;
+        }
+
+        // ❌ NO SOCKET HERE
+        await this.notificationService.createNotification(
+          senderId,
+          receiverId,
+          message,
+          type,
+          payload.senderName,
+          payload.senderAvatar,
+        );
 
         event.processed = true;
         await repo.save(event);

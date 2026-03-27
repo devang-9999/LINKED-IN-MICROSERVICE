@@ -49,7 +49,6 @@ export class NotificationService {
     return savedNotification;
   }
 
-  // 🔥 GET ALL NOTIFICATIONS
   async getNotifications(userId: string): Promise<Notification[]> {
     return await this.notificationRepo.find({
       where: { receiverId: userId },
@@ -57,7 +56,6 @@ export class NotificationService {
     });
   }
 
-  // 🔥 GET UNREAD COUNT
   async getUnreadCount(userId: string): Promise<number> {
     return await this.notificationRepo.count({
       where: {

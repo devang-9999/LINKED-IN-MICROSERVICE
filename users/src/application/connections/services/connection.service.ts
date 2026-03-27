@@ -99,16 +99,13 @@ export class ConnectionsService {
 
     await this.connectionRepository.save(connection);
 
-    // ✅ ENRICHED EVENT
     await this.outboxRepository.save({
       aggregateType: 'connection',
       aggregateId: connection.id,
       eventType: 'connection.accepted',
       payload: {
-        senderId: connection.sender.id,
-        receiverId: connection.receiver.id,
-
-        // 🔥 IMPORTANT: accepter is sender of notification
+        senderId: connection.receiver.id,
+        receiverId: connection.sender.id,
         senderName: `${connection.receiver.firstName} ${connection.receiver.lastName}`,
         senderAvatar: connection.receiver.profilePicture,
       },

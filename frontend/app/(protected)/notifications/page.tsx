@@ -31,7 +31,7 @@ export default function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const BASE_URL = process.env.NEXT_PUBLIC_NOTIFICATIONS_URL;
-  const backendUrl = `${BASE_URL}/uploads/`;
+  const backendUrl = `http://localhost:3002/uploads/`;
 
   const handleChange = (
     event: React.MouseEvent<HTMLElement>,
@@ -40,12 +40,11 @@ export default function Notifications() {
     if (newFilter !== null) setFilter(newFilter);
   };
 
-  // ✅ FETCH NOTIFICATIONS (DIRECT CALL)
   const fetchNotifications = async () => {
     try {
       const res = await fetch(`${BASE_URL}/notifications`, {
         method: "GET",
-        credentials: "include", // 🔥 VERY IMPORTANT (cookies)
+        credentials: "include",
       });
 
       const data = await res.json();
@@ -62,10 +61,9 @@ export default function Notifications() {
     try {
       await fetch(`${BASE_URL}/notifications/${notification.id}/read`, {
         method: "PATCH",
-        credentials: "include", // 🔥 IMPORTANT
+        credentials: "include",
       });
 
-      // Optimistic update
       setNotifications((prev) =>
         prev.map((n) =>
           n.id === notification.id ? { ...n, isRead: true } : n,
@@ -79,19 +77,32 @@ export default function Notifications() {
   useEffect(() => {
     fetchNotifications();
 
-    const socket = getSocket() || connectSocket();
+    let socket = getSocket();
 
+    if (!socket) {
+      socket = connectSocket();
+    }
+
+    // 🔥 REAL-TIME NOTIFICATION
     socket.on("notification", (data: Notification) => {
-      setNotifications((prev) => [data, ...prev]);
+      console.log("📨 New notification:", data);
+
+      setNotifications((prev) => {
+        const exists = prev.find((n) => n.id === data.id);
+        if (exists) return prev;
+
+        return [data, ...prev];
+      });
     });
 
-    socket.on("notification-count", () => {
-      fetchNotifications();
+    // 🔔 ONLY UPDATE COUNT (NO REFETCH)
+    socket.on("notification-count", ({ unreadCount }) => {
+      console.log("🔔 Unread count:", unreadCount);
     });
 
     return () => {
-      socket.off("notification");
-      socket.off("notification-count");
+      socket?.off("notification");
+      socket?.off("notification-count");
     };
   }, []);
 
@@ -112,7 +123,6 @@ export default function Notifications() {
             </ToggleButtonGroup>
           </Paper>
 
-          {/* LIST */}
           {notifications.length === 0 ? (
             <Paper className="notification-empty">
               <Typography>No notifications yet</Typography>

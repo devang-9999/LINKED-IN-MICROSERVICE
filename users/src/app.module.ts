@@ -35,11 +35,13 @@ import { ConnectionsController } from './presentation/connections/connections.co
 import dataSource from './infrastructure/database/data-source/data-source';
 import { ConnectionsService } from './application/connections/services/connection.service';
 import { JwtModule } from './infrastructure/security/jwt.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { OutboxRunner } from './infrastructure/outbox/outbox.runner';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(dataSource.options),
-
+    ScheduleModule.forRoot(),
     TypeOrmModule.forFeature([
       User,
       Education,
@@ -70,6 +72,7 @@ import { JwtModule } from './infrastructure/security/jwt.module';
     SkillsService,
     FollowersService,
     ConnectionsService,
+    OutboxRunner,
   ],
 })
 export class AppModule {}
