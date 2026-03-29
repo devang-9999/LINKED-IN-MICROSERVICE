@@ -242,4 +242,34 @@ export class ProfileService {
       invitesSent,
     };
   }
+  async getMessagingUsers(currentUserId: string) {
+    const connections = await this.connectionRepository.find({
+      where: [
+        {
+          sender: { id: currentUserId },
+          status: ConnectionStatus.ACCEPTED,
+        },
+        {
+          receiver: { id: currentUserId },
+          status: ConnectionStatus.ACCEPTED,
+        },
+      ],
+      relations: ['sender', 'receiver'],
+    });
+
+    const connectedUserIds = connections.map((c) => {
+      return c.sender.id === currentUserId ? c.receiver.id : c.sender.id;
+    });
+
+    if (!connectedUserIds.length) return [];
+
+    const users = await this.userRepository.find({
+      where: {
+        id: In(connectedUserIds),
+      },
+      select: ['id', 'firstName', 'lastName', 'headline', 'profilePicture'],
+    });
+
+    return users;
+  }
 }

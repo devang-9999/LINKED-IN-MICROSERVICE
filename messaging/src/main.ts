@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-
 import { ValidationPipe } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import * as dotenv from 'dotenv';
@@ -31,11 +31,11 @@ async function bootstrap() {
 
   app.set('trust proxy', 1);
 
-  const PORT = process.env.PORT || 3004;
+  const PORT = process.env.PORT || 3005;
 
   await app.listen(PORT);
 
-  console.log(`🚀 Notification Service running on http://localhost:${PORT}`);
+  console.log(`🚀 Messaging Service running on http://localhost:${PORT}`);
 }
 
 void bootstrap();

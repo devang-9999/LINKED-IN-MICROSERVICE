@@ -89,6 +89,23 @@ services:
     networks:
       - linkedin-network
 
+
+  messaging-service:
+    build: ./messaging
+    container_name: messaging-service
+    ports:
+      - "3005:3005"
+    env_file:
+      - ./messaging/.env.docker
+    volumes:
+      - ./messaging:/app
+      - /app/node_modules
+    command: npm run start:dev
+    depends_on:
+      - postgres
+    networks:
+      - linkedin-network
+
   postgres:
     image: postgres:15
     container_name: linkedin-postgres

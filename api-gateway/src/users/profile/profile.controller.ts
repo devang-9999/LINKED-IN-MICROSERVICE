@@ -45,16 +45,32 @@ export class ProfileController {
       });
     }
   }
-  // @Get('me')
-  // async getMyProfile(@Req() req: any, @Res() res: express.Response) {
-  //   const response = await this.service.getMyProfile(req.headers);
-  //   return res.status(response.status).json(response.data);
-  // }
 
+  @Get('messaging/users')
+  async getMessagingUsers(@Req() req: any, @Res() res: express.Response) {
+    try {
+      const {
+        ['if-none-match']: _etag,
+        ['if-modified-since']: _modified,
+        host,
+        connection,
+        ...cleanHeaders
+      } = req.headers;
+
+      const response = await this.service.getMessagingUsers(cleanHeaders);
+
+      return res.status(response.status).json(response.data);
+    } catch (error: any) {
+      console.error('Messaging users error:', error?.response || error.message);
+
+      return res.status(error?.response?.status || 500).json({
+        message: 'Failed to fetch messaging users',
+      });
+    }
+  }
   @Get('me')
   async getMyProfile(@Req() req: any, @Res() res: express.Response) {
     try {
-      // ✅ Clean problematic headers (IMPORTANT)
       const {
         ['if-none-match']: _etag,
         ['if-modified-since']: _modified,

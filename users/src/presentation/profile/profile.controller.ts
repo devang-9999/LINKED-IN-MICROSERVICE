@@ -37,6 +37,12 @@ export class ProfileController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('messaging/users')
+  getMessagingUsers(@Req() req: any) {
+    return this.profileService.getMessagingUsers(req.user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('me')
   getMyProfile(@Req() req: any) {
     return this.profileService.getMyProfile(req.user.userId);

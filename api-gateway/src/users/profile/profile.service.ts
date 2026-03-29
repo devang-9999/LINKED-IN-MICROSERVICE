@@ -7,15 +7,6 @@ import axios from 'axios';
 export class ProfileService {
   private baseUrl = process.env.USERS_SERVICE_URL;
 
-  // async getMyProfile(headers: any) {
-  //   const response = await axios.get(`${this.baseUrl}/profile/me`, {
-  //     headers,
-  //     withCredentials: true,
-  //   });
-
-  //   return response;
-  // }
-
   async getMyProfile(headers: any) {
     try {
       const cleanHeaders: any = {};
@@ -24,7 +15,6 @@ export class ProfileService {
         cleanHeaders.cookie = headers.cookie;
       }
 
-      // Optional: forward auth header if present
       if (headers.authorization) {
         cleanHeaders.authorization = headers.authorization;
       }
@@ -42,7 +32,7 @@ export class ProfileService {
         error?.response?.data || error.message,
       );
 
-      throw error; // important → controller will handle it
+      throw error;
     }
   }
 
@@ -89,5 +79,28 @@ export class ProfileService {
       headers,
       withCredentials: true,
     });
+  }
+
+  async getMessagingUsers(headers: any) {
+    const cleanHeaders: any = {};
+
+    if (headers.cookie) {
+      cleanHeaders.cookie = headers.cookie;
+    }
+
+    if (headers.authorization) {
+      cleanHeaders.authorization = headers.authorization;
+    }
+
+    const response = await axios.get(
+      `${this.baseUrl}/profile/messaging/users`,
+      {
+        headers: cleanHeaders,
+        withCredentials: true,
+        timeout: 5000,
+      },
+    );
+
+    return response;
   }
 }
