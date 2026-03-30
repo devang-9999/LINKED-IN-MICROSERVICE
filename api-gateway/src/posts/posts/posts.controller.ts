@@ -26,11 +26,6 @@ const proxy = createProxyServer({
 export class PostsController {
   constructor(private readonly service: PostsService) {}
 
-  // @Get()
-  // async getAll(@Req() req: any, @Res() res: express.Response) {
-  //   const response = await this.service.getAllPosts(req.headers);
-  //   return res.status(response.status).json(response.data);
-  // }
   @Get()
   async getAll(@Req() req: any, @Res() res: express.Response) {
     try {
